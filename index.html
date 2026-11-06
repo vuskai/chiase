@@ -1,514 +1,1166 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#080d19">
-<meta name="description" content="PC Screen Connect — chia sẻ màn hình và âm thanh PC tới điện thoại qua WebRTC với điều phối chất lượng thích ứng.">
-<title>PC Screen Connect 4.0 — Smart Connect AI</title>
+<title>PC Screen Connect 3.0</title>
 <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+
 <style>
-:root{color-scheme:dark;--bg:#080d19;--panel:#111a2b;--panel2:#17243a;--line:#263650;--text:#edf4ff;--muted:#8294b2;--blue:#4388ff;--green:#20c997;--amber:#f5b942;--red:#ff526b}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -20%,#183568 0,transparent 55%),var(--bg);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif}button,input{font:inherit}button{cursor:pointer}header{height:72px;padding:0 max(4%,calc((100% - 1200px)/2));display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff12;background:#080d19df;backdrop-filter:blur(14px);position:sticky;top:0;z-index:10}.brand{display:flex;align-items:center;gap:11px;font-weight:850}.logo{width:39px;height:39px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#4388ff,#7359ff);font-size:20px;box-shadow:0 5px 25px #4388ff44}.version{color:#8db5ff;border:1px solid #4388ff55;border-radius:20px;padding:5px 9px;font-size:10px}.header-status{color:var(--muted);font-size:11px;display:flex;align-items:center;gap:8px}.dot,.status-light{width:8px;height:8px;flex:none;border-radius:50%;background:#64748b}.dot{background:var(--green);box-shadow:0 0 10px var(--green)}main{width:min(1200px,94%);margin:38px auto}.hero{text-align:center;margin-bottom:28px}.hero h1{font-size:clamp(28px,5vw,43px);letter-spacing:-1.4px;margin:0 0 9px}.hero h1 span{background:linear-gradient(90deg,#67a5ff,#ac8aff);color:transparent;background-clip:text}.hero p{color:var(--muted);font-size:13px;line-height:1.7;margin:0}.workspace{display:grid;grid-template-columns:320px minmax(0,1fr);gap:18px}.card{min-width:0;background:linear-gradient(145deg,#142038,#101827);border:1px solid var(--line);border-radius:19px;padding:20px;box-shadow:0 15px 50px #0003}.card-title{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;margin-bottom:7px}.card-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:#4388ff20;font-size:19px}.desc{color:var(--muted);font-size:11px;line-height:1.65;margin-bottom:17px}.tabs{display:flex;gap:7px;padding:5px;background:#090f1d;border:1px solid var(--line);border-radius:11px;margin:16px 0}.tab{flex:1;border:0;background:transparent;color:var(--muted);padding:11px 5px;border-radius:8px;font-size:12px;font-weight:750}.tab.active{color:white;background:#285dc1}.panel{display:none}.panel.active{display:block}.field-label{display:block;font-size:10px;letter-spacing:.7px;color:#b1c1da;margin:15px 0 8px}.code-input,input{width:100%;border:1px solid #344663;background:#090f1d;color:white;border-radius:10px;padding:14px;outline:none;font-size:15px}.code-input{text-align:center;letter-spacing:5px;font-size:21px;font-weight:850;text-transform:uppercase}.code-input:focus,input:focus{border-color:var(--blue);box-shadow:0 0 0 3px #4388ff20}.btn{width:100%;border:0;border-radius:10px;padding:13px;color:white;font-size:12px;font-weight:850;transition:.18s;margin-top:9px}.btn:hover{filter:brightness(1.12);transform:translateY(-1px)}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}.primary{background:linear-gradient(100deg,#367cf4,#6559e9)}.success{background:linear-gradient(100deg,#0fae83,#20c997)}.danger{background:#c83d57}.secondary{background:#253650;border:1px solid #3b506e}.code-box{background:#090f1d;border:1px dashed #497ed4;border-radius:13px;padding:15px;text-align:center;margin:15px 0}.code-label{font-size:9px;color:var(--muted);letter-spacing:2px}.code-value{font-size:28px;font-weight:900;letter-spacing:5px;color:#77aaff;margin:11px 0;overflow-wrap:anywhere}.status-box{background:#0b1525;border:1px solid #253752;border-radius:10px;padding:12px;display:flex;align-items:center;gap:9px;margin-top:15px;font-size:11px;color:#a9bbd4;line-height:1.5}.status-light.online{background:var(--green);box-shadow:0 0 9px var(--green)}.status-light.waiting{background:var(--amber);box-shadow:0 0 9px var(--amber)}.hidden{display:none!important}.viewer-card{display:flex;flex-direction:column}.viewer-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px}.viewer-head h2{font-size:16px;margin:0}.live-label{font-size:9px;color:var(--muted);background:#20c99718;border:1px solid #20c99744;padding:6px 9px;border-radius:20px}.screen-area{width:100%;height:min(55vw,550px);min-height:280px;border-radius:13px;border:1px solid #2b3c58;background:#03060c;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative}.screen-area video{display:block;width:100%;height:100%;object-fit:contain;background:#000}.placeholder{text-align:center;padding:23px}.placeholder-icon{font-size:48px;margin-bottom:12px}.placeholder h3{font-size:14px;margin:0 0 7px}.placeholder p{font-size:11px;color:var(--muted);line-height:1.6}.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}.control-btn{flex:1;min-width:105px;background:#1a2940;border:1px solid #304460;color:#dce8ff;border-radius:9px;padding:11px 7px;font-size:10px;font-weight:750}.control-btn:disabled{opacity:.45}.quality-info{display:flex;justify-content:space-between;gap:9px;flex-wrap:wrap;margin-top:12px;color:var(--muted);font-size:10px}.ai-card{margin-top:17px;background:linear-gradient(135deg,#101d33,#101827);border:1px solid #34517a;border-radius:15px;padding:15px}.ai-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.ai-title{font-size:13px;font-weight:850;display:flex;align-items:center;gap:8px}.ai-state{font-size:9px;color:#86b5ff;background:#4388ff18;border:1px solid #4388ff44;border-radius:20px;padding:5px 8px}.ai-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.metric{min-width:0;background:#091322;border:1px solid #263954;border-radius:9px;padding:9px}.metric small{display:block;color:var(--muted);font-size:9px;margin-bottom:5px}.metric strong{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ai-message{margin:11px 0 0;color:#a8bad4;font-size:10px;line-height:1.55}.ai-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}.ai-toggle{display:flex;align-items:center;gap:7px;color:#c4d5ed;font-size:10px}.ai-toggle input{width:auto;accent-color:#4388ff}.feature-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:17px}.feature{border:1px solid var(--line);background:#111a2b;padding:14px;border-radius:13px}.feature b{font-size:11px;display:block;margin:7px 0 4px}.feature p{color:var(--muted);font-size:10px;line-height:1.5;margin:0}.toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,18px);background:#1b2b44;border:1px solid #405778;color:white;padding:12px 17px;border-radius:11px;font-size:11px;opacity:0;pointer-events:none;transition:.22s;z-index:99;text-align:center;max-width:90%}.toast.show{opacity:1;transform:translate(-50%,0)}.screen-area:fullscreen{width:100vw;height:100vh;max-height:100vh;border:0;border-radius:0}.screen-area:fullscreen video{width:100%;height:100%;object-fit:contain}footer{text-align:center;color:#64748b;font-size:10px;padding:27px 10px;line-height:1.7}
-@media(max-width:850px){.workspace{grid-template-columns:1fr}.screen-area{height:min(65vw,520px)}}@media(max-width:600px){header{height:62px;padding:0 4%}.brand{font-size:13px}.logo{width:34px;height:34px}.header-status{font-size:9px}main{margin:25px auto}.card{padding:15px}.hero{margin-bottom:22px}.screen-area{height:56vh;min-height:230px}.feature-row{grid-template-columns:1fr}.ai-grid{grid-template-columns:repeat(2,1fr)}.quality-info{font-size:9px}}
+:root {
+  --bg:#080d19;
+  --panel:#111a2b;
+  --panel2:#17243a;
+  --border:#263650;
+  --text:#edf4ff;
+  --muted:#8294b2;
+  --blue:#4388ff;
+  --green:#20c997;
+  --red:#ff526b;
+}
+
+* { box-sizing:border-box; }
+
+body {
+  margin:0;
+  min-height:100vh;
+  background:
+    radial-gradient(ellipse at 50% -20%,#183568 0%,transparent 55%),
+    var(--bg);
+  color:var(--text);
+  font-family:Inter,Arial,sans-serif;
+}
+
+button,input { font:inherit; }
+button { cursor:pointer; }
+
+header {
+  height:75px;
+  padding:0 6%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid #ffffff12;
+  background:#080d19cc;
+  backdrop-filter:blur(15px);
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+
+.brand {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  font-size:19px;
+  font-weight:800;
+  letter-spacing:-.5px;
+}
+
+.logo {
+  width:40px;
+  height:40px;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  background:linear-gradient(135deg,#4388ff,#7359ff);
+  font-size:21px;
+  box-shadow:0 5px 25px #4388ff44;
+}
+
+.version {
+  color:#80aaff;
+  font-size:11px;
+  border:1px solid #4388ff55;
+  padding:5px 9px;
+  border-radius:20px;
+}
+
+.header-status {
+  color:var(--muted);
+  font-size:12px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.dot {
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 12px var(--green);
+}
+
+main {
+  width:min(1100px,94%);
+  margin:45px auto;
+}
+
+.hero {
+  text-align:center;
+  margin-bottom:35px;
+}
+
+.hero h1 {
+  font-size:clamp(27px,5vw,43px);
+  letter-spacing:-1.5px;
+  margin:0 0 12px;
+}
+
+.hero h1 span {
+  background:linear-gradient(90deg,#67a5ff,#9a84ff);
+  color:transparent;
+  background-clip:text;
+}
+
+.hero p {
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.7;
+}
+
+.workspace {
+  display:grid;
+  grid-template-columns:330px 1fr;
+  gap:20px;
+}
+
+.card {
+  background:linear-gradient(145deg,#142038,#101827);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:22px;
+  box-shadow:0 15px 50px #0003;
+}
+
+.card-title {
+  display:flex;
+  align-items:center;
+  gap:11px;
+  font-size:17px;
+  font-weight:750;
+  margin-bottom:8px;
+}
+
+.card-icon {
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  border-radius:11px;
+  background:#4388ff20;
+  font-size:20px;
+}
+
+.desc {
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.6;
+  margin-bottom:20px;
+}
+
+.tabs {
+  display:flex;
+  gap:8px;
+  padding:5px;
+  background:#090f1d;
+  border:1px solid var(--border);
+  border-radius:12px;
+  margin-bottom:20px;
+}
+
+.tab {
+  flex:1;
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  padding:12px 5px;
+  border-radius:9px;
+  font-size:13px;
+  font-weight:700;
+}
+
+.tab.active {
+  color:white;
+  background:#285dc1;
+  box-shadow:0 4px 15px #2456b855;
+}
+
+.panel { display:none; }
+.panel.active { display:block; }
+
+.field-label {
+  display:block;
+  font-size:12px;
+  color:#b1c1da;
+  margin-bottom:9px;
+}
+
+input {
+  width:100%;
+  border:1px solid #344663;
+  background:#090f1d;
+  color:white;
+  border-radius:11px;
+  padding:15px;
+  outline:none;
+  font-size:17px;
+  transition:.2s;
+}
+
+input:focus {
+  border-color:var(--blue);
+  box-shadow:0 0 0 3px #4388ff20;
+}
+
+.code-input {
+  text-align:center;
+  letter-spacing:5px;
+  font-size:22px;
+  font-weight:800;
+  text-transform:uppercase;
+}
+
+.btn {
+  width:100%;
+  border:0;
+  border-radius:11px;
+  padding:14px;
+  color:white;
+  font-size:13px;
+  font-weight:800;
+  transition:.2s;
+  margin-top:10px;
+}
+
+.btn:hover { filter:brightness(1.12); transform:translateY(-1px); }
+.btn:disabled { opacity:.45;cursor:not-allowed;transform:none; }
+
+.primary { background:linear-gradient(100deg,#367cf4,#6559e9); }
+.success { background:linear-gradient(100deg,#0fae83,#20c997); }
+.danger { background:#d93f59; }
+.secondary { background:#253650;border:1px solid #3b506e; }
+
+.code-box {
+  background:#090f1d;
+  border:1px dashed #497ed4;
+  border-radius:14px;
+  padding:17px;
+  text-align:center;
+  margin:17px 0;
+}
+
+.code-label {
+  font-size:10px;
+  color:var(--muted);
+  letter-spacing:2px;
+}
+
+.code-value {
+  font-size:29px;
+  font-weight:900;
+  letter-spacing:5px;
+  color:#77aaff;
+  margin:12px 0;
+  overflow-wrap:anywhere;
+}
+
+.status-box {
+  background:#0b1525;
+  border:1px solid #253752;
+  border-radius:11px;
+  padding:13px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:17px;
+  font-size:12px;
+  color:#a9bbd4;
+  line-height:1.5;
+}
+
+.status-light {
+  width:9px;
+  height:9px;
+  flex:none;
+  border-radius:50%;
+  background:#64748b;
+}
+
+.status-light.online { background:var(--green);box-shadow:0 0 10px var(--green); }
+.status-light.waiting { background:#f5b942;box-shadow:0 0 10px #f5b942; }
+
+.hidden { display:none!important; }
+
+.viewer-card {
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+}
+
+.viewer-head {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:16px;
+}
+
+.viewer-head h2 {
+  font-size:17px;
+  margin:0;
+}
+
+.live-label {
+  font-size:10px;
+  color:var(--green);
+  background:#20c99718;
+  border:1px solid #20c99744;
+  padding:6px 10px;
+  border-radius:20px;
+}
+
+.screen-area {
+  width:100%;
+  min-height:350px;
+  height:460px;
+  border-radius:15px;
+  border:1px solid #2b3c58;
+  background:#050912;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+}
+
+.screen-area video {
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  background:#000;
+}
+
+.placeholder {
+  text-align:center;
+  padding:25px;
+}
+
+.placeholder-icon {
+  font-size:55px;
+  margin-bottom:15px;
+  filter:drop-shadow(0 5px 20px #4388ff55);
+}
+
+.placeholder h3 {
+  font-size:15px;
+  margin:0 0 8px;
+}
+
+.placeholder p {
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.6;
+}
+
+.controls {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:13px;
+}
+
+.control-btn {
+  flex:1;
+  min-width:100px;
+  background:#1a2940;
+  border:1px solid #304460;
+  color:#dce8ff;
+  border-radius:10px;
+  padding:12px 8px;
+  font-size:11px;
+  font-weight:700;
+}
+
+.control-btn:hover { background:#263c5d; }
+
+.quality-info {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:14px;
+  color:var(--muted);
+  font-size:11px;
+}
+
+.features {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:13px;
+  margin-top:20px;
+}
+
+.feature {
+  border:1px solid var(--border);
+  background:#111a2b;
+  padding:17px;
+  border-radius:14px;
+}
+
+.feature-icon { font-size:21px; }
+.feature h4 { font-size:12px;margin:10px 0 5px; }
+.feature p { color:var(--muted);font-size:11px;line-height:1.5;margin:0; }
+
+footer {
+  text-align:center;
+  color:#64748b;
+  font-size:11px;
+  padding:30px 10px;
+}
+
+.toast {
+  position:fixed;
+  bottom:25px;
+  left:50%;
+  transform:translate(-50%,20px);
+  background:#1b2b44;
+  border:1px solid #405778;
+  color:white;
+  padding:13px 20px;
+  border-radius:12px;
+  font-size:12px;
+  opacity:0;
+  pointer-events:none;
+  transition:.25s;
+  z-index:99;
+  text-align:center;
+  max-width:90%;
+}
+
+.toast.show {
+  opacity:1;
+  transform:translate(-50%,0);
+}
+
+.screen-area:fullscreen {
+  width:100vw;
+  height:100vh;
+  max-height:100vh;
+  border:0;
+  border-radius:0;
+}
+
+.screen-area:fullscreen video {
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+
+@media(max-width:760px) {
+  header { padding:0 4%;height:65px; }
+  .brand { font-size:15px; }
+  .logo { width:35px;height:35px; }
+  .header-status { font-size:10px; }
+  main { margin:27px auto; }
+  .workspace { grid-template-columns:1fr; }
+  .hero { margin-bottom:25px; }
+  .card { padding:17px; }
+  .screen-area { height: min(62vh,430px);min-height:240px; }
+  .features { grid-template-columns:1fr; }
+}
+
+@media(max-width:380px) {
+  .version { display:none; }
+  .screen-area { height:55vh; }
+}
 </style>
 </head>
+
 <body>
+
 <header>
-  <div class="brand"><div class="logo">🖥️</div><span>ScreenConnect</span><span class="version">4.0 SMART AI</span></div>
-  <div class="header-status"><span class="dot"></span><span id="headerState">WEBRTC READY</span></div>
+  <div class="brand">
+    <div class="logo">🖥️</div>
+    <span>ScreenConnect</span>
+    <span class="version">3.0 PRO</span>
+  </div>
+  <div class="header-status">
+    <span class="dot"></span>
+    WebRTC Ready
+  </div>
 </header>
+
 <main>
-  <section class="hero"><h1>Share your screen <span>smarter.</span></h1><p>Truyền màn hình và âm thanh PC tới điện thoại qua WebRTC.<br>AI cục bộ theo dõi đường truyền và tự tối ưu chất lượng khi cần.</p></section>
+
+  <section class="hero">
+    <h1>Share your screen <span>anywhere.</span></h1>
+    <p>
+      Chia sẻ màn hình máy tính đến điện thoại trực tiếp.<br>
+      Nhanh chóng · Âm thanh · Hình ảnh chất lượng cao
+    </p>
+  </section>
+
   <section class="workspace">
+
+    <!-- LEFT PANEL -->
     <div class="card">
-      <div class="card-title"><div class="card-icon">🔗</div>Kết nối thiết bị</div>
-      <div class="desc">Tạo phòng trên PC hoặc nhập mã phòng từ điện thoại.</div>
-      <div class="tabs"><button class="tab active" id="hostTab" onclick="switchTab('host')">🖥 Máy tính</button><button class="tab" id="viewerTab" onclick="switchTab('viewer')">📱 Điện thoại</button></div>
+      <div class="card-title">
+        <div class="card-icon">🔗</div>
+        Kết nối thiết bị
+      </div>
+      <div class="desc">
+        Tạo phòng trên PC hoặc nhập mã phòng từ điện thoại.
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" id="hostTab" onclick="switchTab('host')">
+          🖥 Máy tính
+        </button>
+        <button class="tab" id="viewerTab" onclick="switchTab('viewer')">
+          📱 Điện thoại
+        </button>
+      </div>
+
+      <!-- HOST -->
       <div id="hostPanel" class="panel active">
         <label class="field-label">TẠO PHÒNG CHIA SẺ</label>
-        <button class="btn primary" id="createBtn" onclick="createRoom()">＋ TẠO MÃ KẾT NỐI</button>
-        <div id="hostRoom" class="hidden"><div class="code-box"><div class="code-label">MÃ PHÒNG CỦA BẠN</div><div class="code-value" id="roomCode">--------</div><button class="btn secondary" onclick="copyCode()">📋 SAO CHÉP MÃ</button></div><button class="btn success" id="shareBtn" onclick="startShare()">🖥 CHỌN MÀN HÌNH CHIA SẺ</button><button class="btn danger" onclick="stopHost()">■ DỪNG PHÒNG</button></div>
-        <div class="status-box"><span class="status-light" id="hostLight"></span><span id="hostStatus">Chưa tạo phòng. Hãy tạo mã kết nối.</span></div>
+
+        <button class="btn primary" id="createBtn" onclick="createRoom()">
+          + TẠO MÃ KẾT NỐI
+        </button>
+
+        <div id="hostRoom" class="hidden">
+          <div class="code-box">
+            <div class="code-label">MÃ PHÒNG CỦA BẠN</div>
+            <div class="code-value" id="roomCode">--------</div>
+            <button class="btn secondary" onclick="copyCode()">
+              📋 SAO CHÉP MÃ
+            </button>
+          </div>
+
+          <button class="btn success" id="shareBtn" onclick="startShare()">
+            🖥 CHỌN MÀN HÌNH CHIA SẺ
+          </button>
+
+          <button class="btn danger" onclick="stopHost()">
+            ■ DỪNG PHÒNG
+          </button>
+        </div>
+
+        <div class="status-box">
+          <span class="status-light" id="hostLight"></span>
+          <span id="hostStatus">Chưa tạo phòng. Hãy tạo mã kết nối.</span>
+        </div>
       </div>
+
+      <!-- VIEWER -->
       <div id="viewerPanel" class="panel">
-        <label class="field-label" for="codeInput">NHẬP MÃ TỪ MÁY TÍNH</label><input id="codeInput" class="code-input" placeholder="XXXXXXXX" maxlength="8" autocomplete="off" autocapitalize="characters">
-        <button class="btn primary" id="connectBtn" onclick="connectPC()">↗ KẾT NỐI VỚI PC</button><button class="btn danger hidden" id="disconnectBtn" onclick="disconnectViewer()">NGẮT KẾT NỐI</button>
-        <div class="status-box"><span class="status-light" id="viewerLight"></span><span id="viewerStatus">Chưa kết nối với máy tính.</span></div>
+        <label class="field-label">NHẬP MÃ TỪ MÁY TÍNH</label>
+
+        <input
+          id="codeInput"
+          class="code-input"
+          placeholder="XXXXXXXX"
+          maxlength="8"
+          autocomplete="off"
+          autocapitalize="characters"
+        >
+
+        <button class="btn primary" id="connectBtn" onclick="connectPC()">
+          ↗ KẾT NỐI VỚI PC
+        </button>
+
+        <button class="btn danger hidden" id="disconnectBtn"
+                onclick="disconnectViewer()">
+          NGẮT KẾT NỐI
+        </button>
+
+        <div class="status-box">
+          <span class="status-light" id="viewerLight"></span>
+          <span id="viewerStatus">Chưa kết nối với máy tính.</span>
+        </div>
       </div>
-      <div class="desc" style="margin:18px 0 0">🔒 Chỉ kết nối với máy tính mà bạn được phép truy cập. Mã phòng không thay thế xác thực người dùng.</div>
+
+      <div class="desc" style="margin:20px 0 0">
+        🔒 Chỉ kết nối với máy tính mà bạn được phép truy cập.
+      </div>
     </div>
+
+    <!-- RIGHT PANEL -->
     <div class="card viewer-card">
-      <div class="viewer-head"><h2>📺 Màn hình trực tiếp</h2><span class="live-label" id="liveLabel">● OFFLINE</span></div>
-      <div class="screen-area" id="screenArea"><div class="placeholder" id="placeholder"><div class="placeholder-icon">🖥️</div><h3>Chưa có màn hình được chia sẻ</h3><p>Tạo phòng trên PC và kết nối bằng điện thoại.<br>Hình ảnh sẽ xuất hiện tại đây.</p></div><video id="screen" autoplay playsinline webkit-playsinline class="hidden"></video></div>
-      <div class="controls"><button class="control-btn" id="audioBtn" onclick="toggleAudio()" disabled>🔇 Âm thanh</button><button class="control-btn" onclick="toggleFullscreen()">⛶ Toàn màn hình</button><button class="control-btn" onclick="fitScreen()">◫ Vừa màn hình</button></div>
-      <div class="quality-info"><span id="resolution">Độ phân giải: --</span><span id="audioInfo">Audio: --</span><span id="pathInfo">Đường truyền: --</span></div>
-      <section class="ai-card" aria-live="polite">
-        <div class="ai-head"><div class="ai-title">✦ AI CONNECTION MANAGER</div><span class="ai-state" id="aiState">ĐANG CHỜ DỮ LIỆU</span></div>
-        <div class="ai-grid"><div class="metric"><small>Độ trễ RTT</small><strong id="rttMetric">--</strong></div><div class="metric"><small>Jitter</small><strong id="jitterMetric">--</strong></div><div class="metric"><small>FPS nhận</small><strong id="fpsMetric">--</strong></div><div class="metric"><small>Mất gói</small><strong id="lossMetric">--</strong></div></div>
-        <p class="ai-message" id="aiMessage">AI sẽ theo dõi WebRTC, phân biệt nghẽn mạng với tải giải mã của điện thoại và gửi yêu cầu điều chỉnh an toàn tới PC.</p>
-        <div class="ai-actions"><label class="ai-toggle"><input id="aiAuto" type="checkbox" checked> Tự động tối ưu</label><button class="control-btn" style="flex:0 0 auto" id="resetQualityBtn" onclick="requestProfile('balanced')">↺ Chất lượng cân bằng</button></div>
-      </section>
+      <div class="viewer-head">
+        <h2>📺 Màn hình trực tiếp</h2>
+        <span class="live-label" id="liveLabel">● OFFLINE</span>
+      </div>
+
+      <div class="screen-area" id="screenArea">
+        <div class="placeholder" id="placeholder">
+          <div class="placeholder-icon">🖥️</div>
+          <h3>Chưa có màn hình được chia sẻ</h3>
+          <p>
+            Tạo phòng trên PC và kết nối bằng điện thoại.<br>
+            Hình ảnh sẽ xuất hiện tại đây.
+          </p>
+        </div>
+
+        <video id="screen" autoplay playsinline
+               class="hidden"></video>
+      </div>
+
+      <div class="controls">
+        <button class="control-btn" id="audioBtn"
+                onclick="toggleAudio()" disabled>
+          🔇 Âm thanh
+        </button>
+
+        <button class="control-btn" onclick="toggleFullscreen()">
+          ⛶ Toàn màn hình
+        </button>
+
+        <button class="control-btn" onclick="fitScreen()">
+          ◫ Vừa màn hình
+        </button>
+      </div>
+
+      <div class="quality-info">
+        <span id="resolution">Độ phân giải: --</span>
+        <span id="audioInfo">Audio: --</span>
+      </div>
+    </div>
+
+  </section>
+
+  <section class="features">
+    <div class="feature">
+      <div class="feature-icon">🔊</div>
+      <h4>Truyền âm thanh</h4>
+      <p>Nhận âm thanh PC khi nguồn chia sẻ hỗ trợ.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon">📐</div>
+      <h4>Tự căn màn hình</h4>
+      <p>Giữ tỷ lệ hình ảnh, tự thích ứng với điện thoại.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon">⚡</div>
+      <h4>Kết nối trực tiếp</h4>
+      <p>Truyền dữ liệu qua WebRTC sau khi thiết lập kết nối.</p>
     </div>
   </section>
-  <section class="feature-row"><div class="feature"><div>🔊</div><b>Hình ảnh & âm thanh</b><p>Truyền audio/video qua cùng phiên WebRTC; có thể bật tiếng sau thao tác của người xem.</p></div><div class="feature"><div>🔀</div><b>Đường truyền trực tiếp</b><p>Đọc ICE candidate để phân biệt P2P trực tiếp và relay; không giả định máy chủ signaling truyền video.</p></div><div class="feature"><div>✦</div><b>AI thích ứng</b><p>Ước lượng jitter, RTT, mất gói, FPS và thời gian giải mã để chọn cấu hình gửi phù hợp.</p></div></section>
-  <footer>PC Screen Connect 4.0 · WebRTC + PeerJS · Adaptive controller chạy cục bộ<br>Không thể xác nhận chắc chắn cáp USB bằng API trình duyệt. Kết nối P2P trực tiếp không đồng nghĩa chắc chắn đang cắm dây.</footer>
-</main>
-<div class="toast" id="toast"></div>
-<script>
-'use strict';
 
-// Signaling uses PeerJS. Media travels over the WebRTC peer connection whenever ICE can establish it.
-const PEER_OPTIONS = {
-  debug: 0,
-  config: { iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' }
-  ] }
-};
-const PROFILES = {
-  balanced: { maxBitrate: 2200000, maxFramerate: 30, scale: 1, label: 'Cân bằng' },
-  smooth:   { maxBitrate: 1300000, maxFramerate: 24, scale: 1.5, label: 'Mượt / mạng yếu' },
-  device:   { maxBitrate: 1100000, maxFramerate: 20, scale: 2, label: 'Nhẹ cho điện thoại' },
-  high:     { maxBitrate: 3500000, maxFramerate: 45, scale: 1, label: 'Chất lượng cao' }
-};
+  <footer>
+    PC Screen Connect 3.0 · Powered by WebRTC & PeerJS
+    <br><br>
+    Chỉ sử dụng để chia sẻ màn hình có sự cho phép.
+  </footer>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
 let peer = null;
 let localStream = null;
 let activeCall = null;
-let hostConnections = new Map(); // viewer peer id -> { conn, call, profile }
-let controlConn = null;
+let hostConnections = new Map();
 let isHost = false;
 let roomCode = null;
-let statsTimer = null;
-let previousStats = null;
-let lastProfileRequest = 0;
-let lastProfileSent = '';
-let poorStreak = 0;
-let goodStreak = 0;
-let lastMetrics = null;
+let reconnecting = false;
 
 const $ = id => document.getElementById(id);
+
 function toast(message) {
-  const el = $('toast'); el.textContent = message; el.classList.add('show');
-  clearTimeout(toast.timer); toast.timer = setTimeout(() => el.classList.remove('show'), 2800);
+  const el = $('toast');
+  el.textContent = message;
+  el.classList.add('show');
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => el.classList.remove('show'), 2600);
 }
+
 function setStatus(type, message, state = '') {
   $(type + 'Status').textContent = message;
   $(type + 'Light').className = 'status-light ' + state;
 }
+
 function switchTab(type) {
   $('hostPanel').classList.toggle('active', type === 'host');
   $('viewerPanel').classList.toggle('active', type === 'viewer');
   $('hostTab').classList.toggle('active', type === 'host');
   $('viewerTab').classList.toggle('active', type === 'viewer');
 }
+
 function randomCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const bytes = new Uint32Array(8); crypto.getRandomValues(bytes);
-  return Array.from(bytes, value => chars[value % chars.length]).join('');
+  const bytes = new Uint32Array(8);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, v => chars[v % chars.length]).join('');
 }
+
 function setLive(online) {
   $('liveLabel').textContent = online ? '● LIVE' : '● OFFLINE';
   $('liveLabel').style.color = online ? '#20c997' : '#8294b2';
 }
-function resetAiPanel(message = 'AI sẽ bắt đầu đo khi nhận được luồng video.') {
-  $('aiState').textContent = 'ĐANG CHỜ DỮ LIỆU';
-  $('rttMetric').textContent = '--'; $('jitterMetric').textContent = '--';
-  $('fpsMetric').textContent = '--'; $('lossMetric').textContent = '--';
-  $('aiMessage').textContent = message;
-  $('pathInfo').textContent = 'Đường truyền: --';
-  lastMetrics = null; previousStats = null; poorStreak = 0; goodStreak = 0; lastProfileSent = ''; lastProfileRequest = 0;
-}
-function stopStatsMonitor() {
-  if (statsTimer) clearInterval(statsTimer);
-  statsTimer = null; previousStats = null;
-}
+
 function resetViewerScreen() {
-  stopStatsMonitor();
-  const video = $('screen'); video.pause(); video.srcObject = null; video.classList.add('hidden');
-  $('placeholder').classList.remove('hidden'); $('audioBtn').disabled = true;
-  $('audioBtn').textContent = '🔇 Âm thanh'; $('resolution').textContent = 'Độ phân giải: --';
-  $('audioInfo').textContent = 'Audio: --'; setLive(false); resetAiPanel();
-}
-function peerErrorText(err) {
-  const messages = {
-    'peer-unavailable': 'Không tìm thấy phòng. Kiểm tra mã phòng.',
-    'network': 'Lỗi mạng khi kết nối signaling.',
-    'server-error': 'Máy chủ signaling gặp lỗi.',
-    'unavailable-id': 'Mã phòng đã được sử dụng.'
-  };
-  return messages[err?.type] || ('Lỗi: ' + (err?.type || err?.message || 'không xác định'));
+  const video = $('screen');
+  video.pause();
+  video.srcObject = null;
+  video.classList.add('hidden');
+
+  $('placeholder').classList.remove('hidden');
+  $('audioBtn').disabled = true;
+  $('audioBtn').textContent = '🔇 Âm thanh';
+  $('resolution').textContent = 'Độ phân giải: --';
+  $('audioInfo').textContent = 'Audio: --';
+  setLive(false);
 }
 
-// -------------------- HOST --------------------
+// ============================
+// HOST: CREATE ROOM
+// ============================
+
 function createRoom() {
   if (peer) return;
-  if (!window.Peer) { toast('Không tải được PeerJS. Kiểm tra Internet.'); return; }
-  isHost = true; roomCode = randomCode(); $('createBtn').disabled = true;
-  setStatus('host', 'Đang khởi tạo phòng...', 'waiting'); $('headerState').textContent = 'SIGNALING...';
-  try { peer = new Peer('pc-' + roomCode, PEER_OPTIONS); }
-  catch (error) { toast(error.message); resetHost(); return; }
+
+  if (!window.Peer) {
+    toast('Không tải được PeerJS. Kiểm tra Internet.');
+    return;
+  }
+
+  isHost = true;
+  roomCode = randomCode();
+
+  $('createBtn').disabled = true;
+  setStatus('host', 'Đang khởi tạo phòng...', 'waiting');
+
+  peer = new Peer('pc-' + roomCode);
 
   peer.on('open', () => {
-    $('roomCode').textContent = roomCode; $('hostRoom').classList.remove('hidden');
-    setStatus('host', 'Phòng sẵn sàng. Đang chờ điện thoại kết nối.', 'online');
-    $('headerState').textContent = 'HOST READY'; toast('Tạo phòng thành công.');
+    $('roomCode').textContent = roomCode;
+    $('hostRoom').classList.remove('hidden');
+
+    setStatus(
+      'host',
+      'Phòng đã sẵn sàng. Đang chờ điện thoại kết nối.',
+      'online'
+    );
+
+    toast('Tạo phòng thành công!');
   });
+
   peer.on('connection', conn => {
-    const entry = { conn, call: null, profile: 'balanced' };
-    hostConnections.set(conn.peer, entry);
+    hostConnections.set(conn.peer, conn);
+
     conn.on('open', () => {
-      setStatus('host', 'Có thiết bị đang kết nối (' + hostConnections.size + ').', 'online');
-      if (localStream) sendScreen(conn.peer);
+      setStatus('host', 'Có điện thoại đang kết nối.', 'online');
+
+      if (localStream) {
+        sendScreen(conn.peer);
+      }
     });
-    conn.on('data', data => handleHostControl(conn.peer, data));
+
     conn.on('close', () => {
-      const current = hostConnections.get(conn.peer);
-      if (current?.call) current.call.close();
       hostConnections.delete(conn.peer);
-      setStatus('host', hostConnections.size ? 'Vẫn còn thiết bị đang kết nối.' : 'Đang chờ điện thoại kết nối.', hostConnections.size ? 'online' : 'waiting');
+      setStatus(
+        'host',
+        hostConnections.size
+          ? 'Vẫn còn thiết bị đang kết nối.'
+          : 'Thiết bị đã ngắt kết nối.',
+        hostConnections.size ? 'online' : 'waiting'
+      );
     });
-    conn.on('error', () => hostConnections.delete(conn.peer));
+
+    conn.on('error', () => {
+      hostConnections.delete(conn.peer);
+    });
   });
-  peer.on('error', err => { setStatus('host', peerErrorText(err), ''); toast(peerErrorText(err)); resetHost(); });
+
+  peer.on('error', err => {
+    setStatus('host', 'Lỗi: ' + err.type, '');
+    toast('Không thể tạo phòng: ' + err.type);
+    resetHost();
+  });
+
   peer.on('disconnected', () => {
-    setStatus('host', 'Mất signaling. Đang thử kết nối lại...', 'waiting');
-    try { if (peer && !peer.destroyed) peer.reconnect(); } catch (_) {}
+    setStatus('host', 'Mất kết nối máy chủ trung gian.', 'waiting');
   });
 }
+
 async function copyCode() {
   if (!roomCode) return;
-  try { await navigator.clipboard.writeText(roomCode); toast('Đã sao chép mã phòng.'); }
-  catch (_) { toast('Không thể sao chép tự động. Mã: ' + roomCode); }
+
+  try {
+    await navigator.clipboard.writeText(roomCode);
+    toast('Đã sao chép mã phòng!');
+  } catch {
+    toast('Không thể sao chép. Mã: ' + roomCode);
+  }
 }
+
+// ============================
+// HOST: SHARE SCREEN + AUDIO
+// ============================
+
 async function startShare() {
   if (!peer || !isHost) return;
-  if (!navigator.mediaDevices?.getDisplayMedia) { toast('Trình duyệt không hỗ trợ chia sẻ màn hình.'); return; }
+
+  if (!navigator.mediaDevices?.getDisplayMedia) {
+    toast('Trình duyệt không hỗ trợ chia sẻ màn hình.');
+    return;
+  }
+
   try {
     localStream = await navigator.mediaDevices.getDisplayMedia({
-      video: { frameRate: { ideal: 30, max: 60 } }, audio: true
+      video: {
+        frameRate: { ideal: 30, max: 60 }
+      },
+      audio: true
     });
+
     const videoTrack = localStream.getVideoTracks()[0];
-    if (!videoTrack) throw new Error('Không nhận được video màn hình.');
-    videoTrack.addEventListener('ended', () => { if (localStream) stopShareOnly(); }, { once: true });
+
+    if (!videoTrack) {
+      throw new Error('Không nhận được video màn hình.');
+    }
+
+    videoTrack.addEventListener('ended', () => {
+      if (localStream) stopShareOnly();
+    }, { once: true });
+
     $('shareBtn').disabled = true;
-    setStatus('host', localStream.getAudioTracks().length ? 'Đang chia sẻ màn hình và âm thanh.' : 'Đang chia sẻ hình ảnh. Nguồn không có audio track.', 'online');
-    for (const id of hostConnections.keys()) sendScreen(id);
-    toast('Đã bắt đầu chia sẻ.');
-  } catch (error) { toast('Không thể chia sẻ: ' + error.message); }
+
+    const hasAudio = localStream.getAudioTracks().length > 0;
+
+    setStatus(
+      'host',
+      hasAudio
+        ? 'Đang chia sẻ màn hình và âm thanh.'
+        : 'Đang chia sẻ hình ảnh. Nguồn không cung cấp âm thanh.',
+      'online'
+    );
+
+    // Gửi tới tất cả thiết bị đã kết nối
+    for (const id of hostConnections.keys()) {
+      sendScreen(id);
+    }
+
+    toast('Đã bắt đầu chia sẻ!');
+
+  } catch (err) {
+    toast('Không thể chia sẻ: ' + err.message);
+  }
 }
+
 function sendScreen(viewerId) {
   if (!peer || !localStream) return;
-  const entry = hostConnections.get(viewerId);
-  if (!entry || !entry.conn?.open) return;
-  if (entry.call) { try { entry.call.close(); } catch (_) {} }
-  const call = peer.call(viewerId, localStream, { metadata: { app: 'pc-screen-connect', version: '4.0' } });
-  if (!call) return;
-  entry.call = call; entry.profile = 'balanced';
-  call.on('close', () => { if (entry.call === call) entry.call = null; });
-  call.on('error', () => { if (entry.call === call) entry.call = null; });
-  // Apply the default sender policy once the PeerConnection has created its sender.
-  setTimeout(() => applyProfileToSender(entry, 'balanced'), 500);
-}
-async function applyProfileToSender(entry, profileName) {
-  const profile = PROFILES[profileName];
-  const pc = entry?.call?.peerConnection;
-  if (!profile || !pc?.getSenders) return false;
-  const sender = pc.getSenders().find(item => item.track?.kind === 'video');
-  if (!sender) return false;
-  try {
-    const params = sender.getParameters();
-    if (!params.encodings || !params.encodings.length) return false;
-    params.encodings[0] = {
-      ...params.encodings[0],
-      maxBitrate: profile.maxBitrate,
-      maxFramerate: profile.maxFramerate,
-      scaleResolutionDownBy: profile.scale
-    };
-    await sender.setParameters(params);
-    entry.profile = profileName;
-    return true;
-  } catch (error) {
-    // Some browsers reject scaleResolutionDownBy while accepting bitrate/FPS caps.
-    try {
-      const fallback = sender.getParameters();
-      if (!fallback.encodings || !fallback.encodings.length) return false;
-      fallback.encodings[0] = {
-        ...fallback.encodings[0],
-        maxBitrate: profile.maxBitrate,
-        maxFramerate: profile.maxFramerate
-      };
-      await sender.setParameters(fallback);
-      entry.profile = profileName;
-      return true;
-    } catch (fallbackError) {
-      console.warn('Adaptive sender parameters are not supported by this browser:', error, fallbackError);
-      return false;
-    }
-  }
-}
-function handleHostControl(viewerId, data) {
-  const entry = hostConnections.get(viewerId);
-  if (!entry || !data || typeof data !== 'object') return;
-  if (data.type === 'device-hint') {
-    // Browser-provided hints are coarse and never treated as a definitive hardware diagnosis.
-    if (data.lowPower === true) applyProfileToSender(entry, 'device');
-  } else if (data.type === 'quality-request' && Object.prototype.hasOwnProperty.call(PROFILES, data.profile)) {
-    applyProfileToSender(entry, data.profile);
-  } else if (data.type === 'viewer-metrics') {
-    const safe = {
-      rtt: Number.isFinite(data.rtt) ? Math.round(data.rtt) : null,
-      jitter: Number.isFinite(data.jitter) ? Math.round(data.jitter) : null,
-      fps: Number.isFinite(data.fps) ? Math.round(data.fps) : null,
-      profile: entry.profile
-    };
-    setStatus('host', 'Điện thoại đang xem · RTT ' + (safe.rtt ?? '--') + ' ms · ' + (safe.fps ?? '--') + ' FPS · ' + PROFILES[entry.profile].label, 'online');
-  }
-}
-function stopShareOnly() {
-  if (localStream) { localStream.getTracks().forEach(track => track.stop()); localStream = null; }
-  hostConnections.forEach(entry => { if (entry.call) { entry.call.close(); entry.call = null; } });
-  $('shareBtn').disabled = false;
-  setStatus('host', 'Đã dừng chia sẻ màn hình. Phòng vẫn hoạt động.', 'waiting'); toast('Đã dừng chia sẻ.');
-}
-function resetHost() {
-  if (localStream) { localStream.getTracks().forEach(track => track.stop()); localStream = null; }
-  hostConnections.forEach(entry => { try { entry.call?.close(); entry.conn?.close(); } catch (_) {} });
-  hostConnections.clear();
-  if (peer) { try { peer.destroy(); } catch (_) {} peer = null; }
-  roomCode = null; $('hostRoom').classList.add('hidden'); $('createBtn').disabled = false; $('shareBtn').disabled = false;
-  $('headerState').textContent = 'WEBRTC READY'; setStatus('host', 'Chưa tạo phòng.', '');
-}
-function stopHost() { resetHost(); toast('Đã đóng phòng.'); }
 
-// -------------------- VIEWER --------------------
+  const conn = hostConnections.get(viewerId);
+
+  if (!conn || !conn.open) return;
+
+  const oldCall = conn.call;
+
+  if (oldCall) {
+    oldCall.close();
+  }
+
+  const call = peer.call(viewerId, localStream);
+
+  if (!call) return;
+
+  conn.call = call;
+
+  call.on('close', () => {
+    if (conn.call === call) conn.call = null;
+  });
+
+  call.on('error', () => {
+    if (conn.call === call) conn.call = null;
+  });
+}
+
+function stopShareOnly() {
+  if (localStream) {
+    localStream.getTracks().forEach(track => track.stop());
+    localStream = null;
+  }
+
+  hostConnections.forEach(conn => {
+    if (conn.call) {
+      conn.call.close();
+      conn.call = null;
+    }
+  });
+
+  $('shareBtn').disabled = false;
+
+  setStatus(
+    'host',
+    'Đã dừng chia sẻ màn hình. Phòng vẫn hoạt động.',
+    'waiting'
+  );
+
+  toast('Đã dừng chia sẻ.');
+}
+
+function resetHost() {
+  if (localStream) {
+    localStream.getTracks().forEach(track => track.stop());
+    localStream = null;
+  }
+
+  if (peer) {
+    peer.destroy();
+    peer = null;
+  }
+
+  hostConnections.clear();
+  roomCode = null;
+
+  $('hostRoom').classList.add('hidden');
+  $('createBtn').disabled = false;
+  $('shareBtn').disabled = false;
+
+  setStatus('host', 'Chưa tạo phòng.', '');
+}
+
+function stopHost() {
+  resetHost();
+  toast('Đã đóng phòng.');
+}
+
+// ============================
+// VIEWER: CONNECT
+// ============================
+
 function connectPC() {
   if (peer) return;
-  if (!window.Peer) { toast('Không tải được PeerJS.'); return; }
+
   const code = $('codeInput').value.trim().toUpperCase();
-  if (!/^[A-Z0-9]{8}$/.test(code)) { toast('Mã phòng phải có 8 ký tự.'); return; }
-  $('connectBtn').disabled = true; setStatus('viewer', 'Đang kết nối tới máy tính...', 'waiting'); resetViewerScreen();
-  isHost = false; $('headerState').textContent = 'CONNECTING...';
-  try { peer = new Peer(undefined, PEER_OPTIONS); }
-  catch (error) { toast(error.message); $('connectBtn').disabled = false; peer = null; return; }
+
+  if (!/^[A-Z0-9]{8}$/.test(code)) {
+    toast('Mã phòng phải có 8 ký tự.');
+    return;
+  }
+
+  $('connectBtn').disabled = true;
+  setStatus('viewer', 'Đang kết nối tới máy tính...', 'waiting');
+
+  resetViewerScreen();
+
+  isHost = false;
+  peer = new Peer();
+
   peer.on('open', () => {
-    const conn = peer.connect('pc-' + code, { reliable: true }); controlConn = conn; hostConnections.set('viewer', { conn, call: null, profile: 'balanced' });
+    const conn = peer.connect('pc-' + code, {
+      reliable: true
+    });
+
+    hostConnections.set('viewer', conn);
+
     conn.on('open', () => {
-      setStatus('viewer', 'Đã vào phòng. Đang chờ PC chia sẻ màn hình...', 'online');
-      $('disconnectBtn').classList.remove('hidden'); $('headerState').textContent = 'VIEWER CONNECTED';
-      sendDeviceHint(); toast('Kết nối phòng thành công.');
+      setStatus(
+        'viewer',
+        'Đã kết nối phòng. Đang chờ PC chia sẻ màn hình...',
+        'online'
+      );
+
+      $('disconnectBtn').classList.remove('hidden');
+      toast('Kết nối phòng thành công!');
     });
-    conn.on('data', () => {});
-    conn.on('error', () => setStatus('viewer', 'Lỗi kênh điều khiển.', ''));
+
+    conn.on('error', () => {
+      setStatus('viewer', 'Lỗi kết nối phòng.', '');
+    });
+
     conn.on('close', () => {
-      if (peer && !isHost) { setStatus('viewer', 'PC đã đóng kết nối.', ''); resetViewerScreen(); }
+      if (!peer || isHost) return;
+
+      setStatus('viewer', 'PC đã đóng kết nối.', '');
+      resetViewerScreen();
     });
   });
+
+  // Nhận cuộc gọi media từ PC
   peer.on('call', call => {
-    if (activeCall) activeCall.close(); activeCall = call;
+    if (activeCall) activeCall.close();
+
+    activeCall = call;
+
     call.answer();
-    call.on('stream', stream => attachIncomingStream(call, stream));
-    call.on('close', () => { if (activeCall === call) activeCall = null; resetViewerScreen(); setStatus('viewer', 'Chia sẻ màn hình đã kết thúc.', 'waiting'); });
-    call.on('error', error => { resetViewerScreen(); setStatus('viewer', 'Lỗi truyền màn hình: ' + (error.message || 'WebRTC'), ''); });
+
+    call.on('stream', stream => {
+      const video = $('screen');
+
+      video.srcObject = stream;
+      video.muted = false;
+      video.volume = 1;
+
+      $('placeholder').classList.add('hidden');
+      video.classList.remove('hidden');
+
+      $('audioBtn').disabled = false;
+
+      const videoTrack = stream.getVideoTracks()[0];
+      const audioTracks = stream.getAudioTracks();
+
+      if (videoTrack) {
+        const updateResolution = () => {
+          const settings = videoTrack.getSettings();
+          if (settings.width && settings.height) {
+            $('resolution').textContent =
+              'Độ phân giải: ' +
+              settings.width + ' × ' + settings.height;
+          }
+        };
+
+        updateResolution();
+        videoTrack.addEventListener('unmute', updateResolution);
+      }
+
+      $('audioInfo').textContent =
+        'Audio: ' + (audioTracks.length ? 'Có' : 'Không có');
+
+      setLive(true);
+
+      video.play().then(() => {
+        $('audioBtn').textContent = '🔊 Âm thanh ON';
+        setStatus(
+          'viewer',
+          audioTracks.length
+            ? 'Đang xem và nhận âm thanh PC.'
+            : 'Đang xem màn hình PC. Nguồn không có âm thanh.',
+          'online'
+        );
+      }).catch(() => {
+        $('audioBtn').textContent = '🔊 BẬT ÂM THANH';
+        setStatus(
+          'viewer',
+          'Đã nhận màn hình. Nhấn Bật âm thanh để phát.',
+          'online'
+        );
+      });
+    });
+
+    call.on('close', () => {
+      if (activeCall === call) activeCall = null;
+      resetViewerScreen();
+      setStatus('viewer', 'Chia sẻ màn hình đã kết thúc.', 'waiting');
+    });
+
+    call.on('error', () => {
+      resetViewerScreen();
+      setStatus('viewer', 'Lỗi truyền màn hình.', '');
+    });
   });
+
   peer.on('error', err => {
-    const message = peerErrorText(err); setStatus('viewer', message, ''); toast(message);
+    const messages = {
+      'peer-unavailable': 'Không tìm thấy phòng. Kiểm tra mã phòng.',
+      'network': 'Lỗi mạng. Hãy kiểm tra Internet.',
+      'server-error': 'Máy chủ trung gian gặp lỗi.',
+      'unavailable-id': 'ID đã được sử dụng.'
+    };
+
+    setStatus(
+      'viewer',
+      messages[err.type] || ('Lỗi: ' + err.type),
+      ''
+    );
+
     $('connectBtn').disabled = false;
   });
+
   peer.on('disconnected', () => {
-    setStatus('viewer', 'Mất signaling. Đang thử kết nối lại...', 'waiting');
-    try { if (peer && !peer.destroyed) peer.reconnect(); } catch (_) {}
+    setStatus('viewer', 'Mất kết nối máy chủ.', 'waiting');
   });
 }
-function sendDeviceHint() {
-  const cores = Number(navigator.hardwareConcurrency || 0);
-  const memory = Number(navigator.deviceMemory || 0);
-  // These are approximate hints only; browsers may omit or reduce them for privacy.
-  const lowPower = (memory > 0 && memory <= 3) || (cores > 0 && cores <= 4);
-  safeSendControl({ type: 'device-hint', lowPower, cores: cores || null, memory: memory || null });
-}
-function attachIncomingStream(call, stream) {
-  const video = $('screen');
-  video.srcObject = stream; video.muted = false; video.volume = 1;
-  video.playsInline = true; video.setAttribute('playsinline', '');
-  video.classList.remove('hidden'); $('placeholder').classList.add('hidden'); $('audioBtn').disabled = false;
-  const videoTrack = stream.getVideoTracks()[0];
-  const updateResolution = () => {
-    const settings = videoTrack?.getSettings?.();
-    if (settings?.width && settings?.height) $('resolution').textContent = 'Độ phân giải: ' + settings.width + ' × ' + settings.height;
-  };
-  updateResolution(); videoTrack?.addEventListener('unmute', updateResolution);
-  const hasAudio = stream.getAudioTracks().length > 0;
-  $('audioInfo').textContent = 'Audio: ' + (hasAudio ? 'Có' : 'Không có');
-  setLive(true);
-  video.play().then(() => {
-    $('audioBtn').textContent = '🔊 Âm thanh ON';
-    setStatus('viewer', hasAudio ? 'Đang xem và nhận âm thanh PC.' : 'Đang xem màn hình PC. Nguồn không có âm thanh.', 'online');
-  }).catch(() => {
-    video.muted = true; $('audioBtn').textContent = '🔊 BẬT ÂM THANH';
-    setStatus('viewer', 'Đã nhận màn hình. Nhấn Bật âm thanh để phát.', 'online');
-  });
-  resetAiPanel('Đã nhận video. AI đang đo độ trễ, FPS, jitter và tải giải mã.');
-  startStatsMonitor(call);
-}
-function safeSendControl(payload) {
-  try { if (controlConn?.open) controlConn.send(payload); } catch (_) {}
-}
-function requestProfile(profile, reason = 'Người dùng yêu cầu') {
-  if (!PROFILES[profile]) return;
-  lastProfileSent = profile; lastProfileRequest = Date.now();
-  safeSendControl({ type: 'quality-request', profile, reason });
-  $('aiState').textContent = 'ĐÃ GỬI ĐIỀU CHỈNH';
-  $('aiMessage').textContent = reason + ' · Đề nghị PC chuyển sang cấu hình ' + PROFILES[profile].label + '.';
-}
 
-// -------------------- LOCAL ADAPTIVE CONTROLLER --------------------
-async function readPeerStats(call) {
-  const pc = call?.peerConnection;
-  if (!pc?.getStats) return null;
-  const report = await pc.getStats();
-  let inbound = null, selectedPair = null, transport = null;
-  report.forEach(stat => {
-    if (stat.type === 'inbound-rtp' && (stat.kind === 'video' || stat.mediaType === 'video')) inbound = stat;
-    if (stat.type === 'transport' && stat.selectedCandidatePairId) transport = stat;
-  });
-  if (transport?.selectedCandidatePairId) selectedPair = report.get(transport.selectedCandidatePairId) || null;
-  if (!selectedPair) {
-    report.forEach(stat => {
-      if (stat.type === 'candidate-pair' && stat.state === 'succeeded' && (stat.selected || stat.nominated)) selectedPair = stat;
-    });
-  }
-  const localCandidate = selectedPair?.localCandidateId ? report.get(selectedPair.localCandidateId) : null;
-  const remoteCandidate = selectedPair?.remoteCandidateId ? report.get(selectedPair.remoteCandidateId) : null;
-  return { inbound, selectedPair, localCandidate, remoteCandidate };
-}
-function classifyPath(localCandidate, remoteCandidate) {
-  const type = localCandidate?.candidateType || 'unknown';
-  const networkType = localCandidate?.networkType || 'unknown';
-  if (type === 'relay') return { label: 'Relay / TURN', detail: 'Đường truyền đang qua máy chủ chuyển tiếp.' };
-  if (type === 'host' && networkType === 'ethernet') return { label: 'P2P · Ethernet-class', detail: 'ICE chọn đường nội bộ kiểu Ethernet. Có thể là LAN hoặc USB tethering; trình duyệt không xác nhận được cáp USB.' };
-  if (type === 'host') return { label: 'P2P · mạng nội bộ', detail: 'ICE chọn host candidate trực tiếp giữa thiết bị.' };
-  if (type === 'srflx' || type === 'prflx') return { label: 'P2P trực tiếp · STUN', detail: 'Luồng media đi ngang hàng; STUN hỗ trợ tìm đường NAT.' };
-  return { label: 'P2P · chưa rõ tuyến', detail: 'Chưa đọc được loại candidate đang chọn.' };
-}
-function metricDelta(current, previous, now) {
-  if (!previous || !current) return null;
-  const seconds = Math.max(.25, (now - previous.at) / 1000);
-  const delta = (key) => Math.max(0, Number(current[key] || 0) - Number(previous[key] || 0));
-  const received = delta('packetsReceived');
-  const lost = delta('packetsLost');
-  const decoded = delta('framesDecoded');
-  const dropped = delta('framesDropped');
-  const lossPercent = (received + lost) > 0 ? lost / (received + lost) * 100 : 0;
-  const dropPercent = (decoded + dropped) > 0 ? dropped / (decoded + dropped) * 100 : 0;
-  const fps = decoded / seconds;
-  const decodeMs = delta('totalDecodeTime') > 0 && decoded > 0 ? delta('totalDecodeTime') / decoded * 1000 : 0;
-  const bitrateKbps = delta('bytesReceived') * 8 / seconds / 1000;
-  return { seconds, fps, lossPercent, dropPercent, decodeMs, bitrateKbps };
-}
-async function sampleStats() {
-  if (!activeCall) return;
-  try {
-    const stats = await readPeerStats(activeCall);
-    if (!stats?.inbound) return;
-    const s = stats.inbound;
-    const now = performance.now();
-    const d = metricDelta(s, previousStats, now);
-    previousStats = {
-      at: now, packetsReceived: s.packetsReceived || 0, packetsLost: s.packetsLost || 0,
-      framesDecoded: s.framesDecoded || 0, framesDropped: s.framesDropped || 0,
-      totalDecodeTime: s.totalDecodeTime || 0, bytesReceived: s.bytesReceived || 0
-    };
-    const pair = stats.selectedPair;
-    const rttMs = Number(pair?.currentRoundTripTime || 0) * 1000;
-    const jitterMs = Number(s.jitter || 0) * 1000;
-    const fps = d ? d.fps : Number(s.framesPerSecond || 0);
-    const loss = d ? d.lossPercent : 0;
-    const decodeMs = d?.decodeMs || 0;
-    const drop = d?.dropPercent || 0;
-    const path = classifyPath(stats.localCandidate, stats.remoteCandidate);
-    $('rttMetric').textContent = rttMs ? Math.round(rttMs) + ' ms' : '--';
-    $('jitterMetric').textContent = jitterMs.toFixed(1) + ' ms';
-    $('fpsMetric').textContent = fps ? Math.round(fps) + ' FPS' : '--';
-    $('lossMetric').textContent = loss.toFixed(1) + '%';
-    $('pathInfo').textContent = 'Đường truyền: ' + path.label;
+// ============================
+// VIEWER CONTROLS
+// ============================
 
-    let message = path.detail;
-    let requested = null;
-    const auto = $('aiAuto').checked;
-    if (d) {
-      const networkBad = loss > 3 || jitterMs > 35 || rttMs > 280;
-      const deviceBusy = decodeMs > 28 || (drop > 12 && loss < 2) || (fps > 0 && fps < 17 && loss < 2);
-      const mildlyBad = loss > 1.5 || jitterMs > 22 || rttMs > 180 || (fps > 0 && fps < 23);
-      if (networkBad) {
-        poorStreak++; goodStreak = 0;
-        message = 'AI phát hiện dấu hiệu nghẽn mạng (mất gói/jitter/RTT). Hạ bitrate và tốc độ khung hình để giữ luồng ổn định. ' + path.detail;
-        requested = 'smooth';
-      } else if (deviceBusy) {
-        poorStreak++; goodStreak = 0;
-        message = 'Mạng chưa có dấu hiệu nghẽn rõ rệt nhưng giải mã hoặc hiển thị điện thoại đang quá tải. Giảm độ phân giải gửi để điện thoại xử lý nhẹ hơn. ' + path.detail;
-        requested = 'device';
-      } else if (mildlyBad) {
-        poorStreak++; goodStreak = 0;
-        message = 'Chất lượng ở mức trung bình. Giữ cấu hình tiết kiệm để tránh giật hình. ' + path.detail;
-        requested = 'smooth';
-      } else {
-        goodStreak++; poorStreak = 0;
-        message = 'Đường truyền và giải mã đang ổn định. ' + path.detail;
-        if (goodStreak >= 3) requested = 'balanced';
-      }
-    }
-    $('aiState').textContent = d ? (requested === 'device' ? 'TẢI GIẢI MÃ CAO' : requested === 'smooth' ? 'ĐANG TỐI ƯU' : 'THEO DÕI TỐT') : 'ĐANG ĐO';
-    $('aiMessage').textContent = message + (d ? ' · Decode ~' + decodeMs.toFixed(1) + ' ms · Bitrate nhận ~' + Math.round(d.bitrateKbps) + ' kbps.' : '');
-    lastMetrics = { rtt: rttMs, jitter: jitterMs, fps, loss };
-    safeSendControl({ type: 'viewer-metrics', rtt: rttMs, jitter: jitterMs, fps, loss });
-
-    if (auto && requested && requested !== lastProfileSent && Date.now() - lastProfileRequest > 7000) {
-      if (requested === 'balanced' && goodStreak < 3) return;
-      requestProfile(requested, requested === 'device' ? 'Phát hiện tải giải mã cao trên điện thoại' : requested === 'smooth' ? 'Phát hiện chất lượng mạng giảm' : 'Kết nối đã ổn định trở lại');
-    }
-  } catch (error) {
-    console.debug('getStats monitor unavailable:', error);
-    $('aiState').textContent = 'THIẾU TELEMETRY';
-    $('aiMessage').textContent = 'Trình duyệt chưa cung cấp đủ số liệu WebRTC. Video vẫn có thể hoạt động bình thường.';
-  }
-}
-function startStatsMonitor(call) {
-  stopStatsMonitor(); previousStats = null;
-  statsTimer = setInterval(() => { if (activeCall === call) sampleStats(); }, 2000);
-  sampleStats();
-}
-
-// -------------------- VIEWER CONTROLS / CLEANUP --------------------
 async function toggleAudio() {
-  const video = $('screen'); if (!video.srcObject) return;
+  const video = $('screen');
+
+  if (!video.srcObject) return;
+
   try {
-    video.muted = !video.muted;
-    if (!video.muted) await video.play();
-    $('audioBtn').textContent = video.muted ? '🔇 Âm thanh OFF' : '🔊 Âm thanh ON';
-  } catch (_) { video.muted = true; toast('Trình duyệt chưa cho phép phát âm thanh.'); }
+    video.muted = false;
+    video.volume = 1;
+    await video.play();
+
+    $('audioBtn').textContent = '🔊 Âm thanh ON';
+    toast('Đã bật âm thanh.');
+  } catch {
+    video.muted = true;
+    toast('Trình duyệt chưa cho phép phát âm thanh.');
+  }
 }
+
 async function toggleFullscreen() {
   const area = $('screenArea');
-  try { if (!document.fullscreenElement) await area.requestFullscreen(); else await document.exitFullscreen(); }
-  catch (_) { toast('Không thể bật toàn màn hình trên thiết bị này.'); }
+
+  try {
+    if (!document.fullscreenElement) {
+      await area.requestFullscreen();
+    } else {
+      await document.exitFullscreen();
+    }
+  } catch {
+    toast('Không thể bật toàn màn hình trên thiết bị này.');
+  }
 }
-function fitScreen() { $('screen').style.objectFit = 'contain'; toast('Đã căn vừa màn hình.'); }
+
+function fitScreen() {
+  const video = $('screen');
+  video.style.objectFit = 'contain';
+  toast('Đã căn vừa màn hình.');
+}
+
 function disconnectViewer() {
-  stopStatsMonitor();
-  if (activeCall) { try { activeCall.close(); } catch (_) {} activeCall = null; }
-  if (controlConn) { try { controlConn.close(); } catch (_) {} controlConn = null; }
-  if (peer && !isHost) { try { peer.destroy(); } catch (_) {} peer = null; }
-  hostConnections.clear(); resetViewerScreen();
-  $('disconnectBtn').classList.add('hidden'); $('connectBtn').disabled = false;
-  $('headerState').textContent = 'WEBRTC READY'; setStatus('viewer', 'Đã ngắt kết nối.', ''); toast('Đã ngắt kết nối.');
+  if (activeCall) {
+    activeCall.close();
+    activeCall = null;
+  }
+
+  if (peer && !isHost) {
+    peer.destroy();
+    peer = null;
+  }
+
+  hostConnections.clear();
+
+  resetViewerScreen();
+
+  $('disconnectBtn').classList.add('hidden');
+  $('connectBtn').disabled = false;
+
+  setStatus('viewer', 'Đã ngắt kết nối.', '');
+  toast('Đã ngắt kết nối.');
 }
+
+// Xử lý khi người dùng đóng trang
 window.addEventListener('beforeunload', () => {
-  stopStatsMonitor();
-  if (localStream) localStream.getTracks().forEach(track => track.stop());
+  if (localStream) {
+    localStream.getTracks().forEach(track => track.stop());
+  }
+
   if (peer) peer.destroy();
 });
-window.addEventListener('resize', () => { if ($('screen').srcObject) fitScreen(); });
+
+// Tự cập nhật thông tin khi thay đổi kích thước
+window.addEventListener('resize', () => {
+  if ($('screen').srcObject) {
+    fitScreen();
+  }
+});
 </script>
 </body>
 </html>
