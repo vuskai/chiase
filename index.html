@@ -1,0 +1,369 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PC Screen Connect</title>
+<script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+<style>
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#090e1b;
+  color:white;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
+.app {
+  width:100%;
+  max-width:480px;
+  background:#131c2e;
+  border:1px solid #273750;
+  border-radius:20px;
+  padding:25px;
+}
+h1 { text-align:center; margin:5px 0; }
+.sub { text-align:center;color:#91a4c1;margin-bottom:25px; }
+.tabs { display:flex;gap:10px;margin-bottom:20px; }
+button {
+  border:0;border-radius:10px;padding:13px;
+  cursor:pointer;font-weight:bold;font-size:15px;
+}
+.tab {
+  flex:1;background:#26344c;color:#bdcce0;
+}
+.tab.active { background:#2563eb;color:white; }
+.panel { display:none; }
+.panel.active { display:block; }
+input {
+  width:100%;padding:15px;border-radius:10px;
+  border:1px solid #354863;background:#0b1424;
+  color:white;font-size:18px;margin:12px 0;
+}
+.action {
+  width:100%;background:#2563eb;color:white;
+  margin-top:10px;
+}
+.action:disabled { opacity:.5;cursor:not-allowed; }
+.green { background:#16a34a; }
+.red { background:#dc2626; }
+.code {
+  background:#080f1d;padding:20px;border-radius:12px;
+  text-align:center;margin:15px 0;
+}
+#roomCode {
+  font-size:27px;font-weight:bold;letter-spacing:3px;
+  color:#60a5fa;overflow-wrap:anywhere;
+}
+.status {
+  color:#a9bdd9;text-align:center;
+  font-size:14px;margin:15px 0;
+}
+video {
+  width:100%;background:#000;border-radius:12px;
+  margin-top:15px;max-height:65vh;
+}
+.hidden { display:none!important; }
+.note {
+  font-size:12px;color:#8294ae;
+  line-height:1.6;margin-top:20px;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <h1>🖥️ PC Screen Connect</h1>
+  <p class="sub">Chia sẻ màn hình PC sang điện thoại</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('host',this)">
+      Máy tính
+    </button>
+    <button class="tab" onclick="showTab('viewer',this)">
+      Điện thoại
+    </button>
+  </div>
+
+  <!-- PC HOST -->
+  <div id="host" class="panel active">
+    <h3>Tạo phòng chia sẻ</h3>
+    <p class="status">Tạo mã để điện thoại kết nối.</p>
+
+    <button class="action" id="createBtn" onclick="createRoom()">
+      + TẠO MÃ KẾT NỐI
+    </button>
+
+    <div id="hostRoom" class="hidden">
+      <div class="code">
+        <p>MÃ KẾT NỐI</p>
+        <div id="roomCode">...</div>
+        <button class="action" onclick="copyCode()">📋 Sao chép mã</button>
+      </div>
+
+      <button class="action green" id="shareBtn" onclick="startShare()">
+        🖥️ CHỌN MÀN HÌNH CHIA SẺ
+      </button>
+
+      <button class="action red" onclick="stopAll()">
+        DỪNG CHIA SẺ
+      </button>
+    </div>
+
+    <p class="status" id="hostStatus">Chưa tạo phòng.</p>
+  </div>
+
+  <!-- PHONE VIEWER -->
+  <div id="viewer" class="panel">
+    <h3>Kết nối với máy tính</h3>
+    <p class="status">Nhập mã hiển thị trên máy tính.</p>
+
+    <input id="codeInput" placeholder="Nhập mã kết nối"
+           maxlength="40" autocomplete="off">
+
+    <button class="action" id="connectBtn" onclick="connectPC()">
+      🔗 KẾT NỐI
+    </button>
+
+    <button class="action red hidden" id="disconnectBtn"
+            onclick="disconnect()">
+      NGẮT KẾT NỐI
+    </button>
+
+    <p class="status" id="viewerStatus">Chưa kết nối.</p>
+
+    <video id="screen" autoplay playsinline controls
+           class="hidden"></video>
+  </div>
+
+  <p class="note">
+    Kết nối cần Internet và trình duyệt hỗ trợ WebRTC.
+    PC cần sử dụng HTTPS hoặc localhost để chia sẻ màn hình.
+    Chỉ chia sẻ màn hình khi bạn đã cho phép trình duyệt.
+  </p>
+</div>
+
+<script>
+let peer = null;
+let localStream = null;
+let currentCall = null;
+let connections = [];
+let isHost = false;
+
+const $ = id => document.getElementById(id);
+
+function showTab(name, button) {
+  document.querySelectorAll('.panel').forEach(p =>
+    p.classList.remove('active')
+  );
+  document.querySelectorAll('.tab').forEach(b =>
+    b.classList.remove('active')
+  );
+  $(name).classList.add('active');
+  button.classList.add('active');
+}
+
+function setStatus(id, message) {
+  $(id).textContent = message;
+}
+
+function randomCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const values = new Uint32Array(8);
+  crypto.getRandomValues(values);
+  return Array.from(values, v => chars[v % chars.length]).join('');
+}
+
+// TẠO PHÒNG PC
+function createRoom() {
+  if (peer) return;
+
+  isHost = true;
+  $('createBtn').disabled = true;
+  setStatus('hostStatus', 'Đang tạo phòng...');
+
+  const code = randomCode();
+  peer = new Peer('pc-' + code);
+
+  peer.on('open', id => {
+    $('roomCode').textContent = code;
+    $('hostRoom').classList.remove('hidden');
+    setStatus('hostStatus', 'Đã tạo phòng. Đang chờ điện thoại...');
+  });
+
+  peer.on('connection', conn => {
+    connections.push(conn);
+
+    conn.on('open', () => {
+      if (localStream) sendScreen(conn.peer);
+      setStatus('hostStatus', 'Có thiết bị đang kết nối.');
+    });
+
+    conn.on('close', () => {
+      setStatus('hostStatus', 'Thiết bị đã ngắt kết nối.');
+    });
+  });
+
+  peer.on('error', err => {
+    setStatus('hostStatus', 'Lỗi: ' + err.type);
+    $('createBtn').disabled = false;
+  });
+}
+
+function copyCode() {
+  const code = $('roomCode').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    setStatus('hostStatus', 'Đã sao chép mã!');
+  });
+}
+
+// CHỌN MÀN HÌNH PC
+async function startShare() {
+  if (!peer || !isHost) return;
+
+  try {
+    localStream = await navigator.mediaDevices.getDisplayMedia({
+      video: true,
+      audio: false
+    });
+
+    localStream.getVideoTracks()[0].addEventListener('ended', () => {
+      stopAll();
+    });
+
+    $('shareBtn').disabled = true;
+    setStatus('hostStatus', 'Đang chia sẻ màn hình.');
+
+    // Gửi màn hình đến các thiết bị đã kết nối
+    connections.forEach(conn => {
+      if (conn.open) sendScreen(conn.peer);
+    });
+
+  } catch (err) {
+    setStatus('hostStatus', 'Không thể chia sẻ: ' + err.message);
+  }
+}
+
+function sendScreen(viewerId) {
+  if (!localStream || !peer) return;
+
+  const call = peer.call(viewerId, localStream);
+  if (!call) return;
+
+  call.on('close', () => {
+    setStatus('hostStatus', 'Một thiết bị đã ngắt xem.');
+  });
+}
+
+// ĐIỆN THOẠI KẾT NỐI
+function connectPC() {
+  if (peer) return;
+
+  const code = $('codeInput').value.trim().toUpperCase();
+
+  if (!/^[A-Z0-9]{8}$/.test(code)) {
+    setStatus('viewerStatus', 'Mã kết nối không hợp lệ.');
+    return;
+  }
+
+  $('connectBtn').disabled = true;
+  setStatus('viewerStatus', 'Đang kết nối...');
+
+  peer = new Peer();
+  isHost = false;
+
+  peer.on('open', () => {
+    const conn = peer.connect('pc-' + code);
+    connections.push(conn);
+
+    conn.on('open', () => {
+      setStatus('viewerStatus', 'Đã kết nối! Đang chờ màn hình PC...');
+      $('disconnectBtn').classList.remove('hidden');
+    });
+
+    conn.on('error', () => {
+      setStatus('viewerStatus', 'Không thể kết nối với PC.');
+    });
+  });
+
+  peer.on('call', call => {
+    currentCall = call;
+    call.answer();
+
+    call.on('stream', stream => {
+      const video = $('screen');
+      video.srcObject = stream;
+      video.classList.remove('hidden');
+      video.play().catch(() => {});
+      setStatus('viewerStatus', 'Đang xem màn hình PC.');
+    });
+
+    call.on('close', () => {
+      $('screen').srcObject = null;
+      $('screen').classList.add('hidden');
+      setStatus('viewerStatus', 'Chia sẻ đã kết thúc.');
+    });
+  });
+
+  peer.on('error', err => {
+    setStatus('viewerStatus', 'Lỗi kết nối: ' + err.type);
+    $('connectBtn').disabled = false;
+  });
+
+  peer.on('disconnected', () => {
+    setStatus('viewerStatus', 'Mất kết nối máy chủ.');
+  });
+}
+
+// NGẮT KẾT NỐI
+function disconnect() {
+  if (currentCall) {
+    currentCall.close();
+    currentCall = null;
+  }
+
+  connections.forEach(c => c.close());
+  connections = [];
+
+  if (peer && !isHost) {
+    peer.destroy();
+    peer = null;
+  }
+
+  $('screen').srcObject = null;
+  $('screen').classList.add('hidden');
+  $('disconnectBtn').classList.add('hidden');
+  $('connectBtn').disabled = false;
+
+  setStatus('viewerStatus', 'Đã ngắt kết nối.');
+}
+
+function stopAll() {
+  if (localStream) {
+    localStream.getTracks().forEach(track => track.stop());
+    localStream = null;
+  }
+
+  connections.forEach(c => c.close());
+  connections = [];
+
+  if (peer) {
+    peer.destroy();
+    peer = null;
+  }
+
+  currentCall = null;
+  $('hostRoom').classList.add('hidden');
+  $('createBtn').disabled = false;
+  $('shareBtn').disabled = false;
+
+  setStatus('hostStatus', 'Đã dừng chia sẻ.');
+}
+</script>
+</body>
+</html>
