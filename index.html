@@ -3,367 +3,1164 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PC Screen Connect</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080d19">
+<title>PC Screen Connect 3.0</title>
 <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+
 <style>
+:root {
+  --bg:#080d19;
+  --panel:#111a2b;
+  --panel2:#17243a;
+  --border:#263650;
+  --text:#edf4ff;
+  --muted:#8294b2;
+  --blue:#4388ff;
+  --green:#20c997;
+  --red:#ff526b;
+}
+
 * { box-sizing:border-box; }
+
 body {
   margin:0;
-  font-family:Arial,sans-serif;
-  background:#090e1b;
-  color:white;
   min-height:100vh;
+  background:
+    radial-gradient(ellipse at 50% -20%,#183568 0%,transparent 55%),
+    var(--bg);
+  color:var(--text);
+  font-family:Inter,Arial,sans-serif;
+}
+
+button,input { font:inherit; }
+button { cursor:pointer; }
+
+header {
+  height:75px;
+  padding:0 6%;
   display:flex;
-  justify-content:center;
   align-items:center;
-  padding:20px;
+  justify-content:space-between;
+  border-bottom:1px solid #ffffff12;
+  background:#080d19cc;
+  backdrop-filter:blur(15px);
+  position:sticky;
+  top:0;
+  z-index:10;
 }
-.app {
-  width:100%;
-  max-width:480px;
-  background:#131c2e;
-  border:1px solid #273750;
+
+.brand {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  font-size:19px;
+  font-weight:800;
+  letter-spacing:-.5px;
+}
+
+.logo {
+  width:40px;
+  height:40px;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  background:linear-gradient(135deg,#4388ff,#7359ff);
+  font-size:21px;
+  box-shadow:0 5px 25px #4388ff44;
+}
+
+.version {
+  color:#80aaff;
+  font-size:11px;
+  border:1px solid #4388ff55;
+  padding:5px 9px;
   border-radius:20px;
-  padding:25px;
 }
-h1 { text-align:center; margin:5px 0; }
-.sub { text-align:center;color:#91a4c1;margin-bottom:25px; }
-.tabs { display:flex;gap:10px;margin-bottom:20px; }
-button {
-  border:0;border-radius:10px;padding:13px;
-  cursor:pointer;font-weight:bold;font-size:15px;
+
+.header-status {
+  color:var(--muted);
+  font-size:12px;
+  display:flex;
+  align-items:center;
+  gap:8px;
 }
+
+.dot {
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 12px var(--green);
+}
+
+main {
+  width:min(1100px,94%);
+  margin:45px auto;
+}
+
+.hero {
+  text-align:center;
+  margin-bottom:35px;
+}
+
+.hero h1 {
+  font-size:clamp(27px,5vw,43px);
+  letter-spacing:-1.5px;
+  margin:0 0 12px;
+}
+
+.hero h1 span {
+  background:linear-gradient(90deg,#67a5ff,#9a84ff);
+  color:transparent;
+  background-clip:text;
+}
+
+.hero p {
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.7;
+}
+
+.workspace {
+  display:grid;
+  grid-template-columns:330px 1fr;
+  gap:20px;
+}
+
+.card {
+  background:linear-gradient(145deg,#142038,#101827);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:22px;
+  box-shadow:0 15px 50px #0003;
+}
+
+.card-title {
+  display:flex;
+  align-items:center;
+  gap:11px;
+  font-size:17px;
+  font-weight:750;
+  margin-bottom:8px;
+}
+
+.card-icon {
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  border-radius:11px;
+  background:#4388ff20;
+  font-size:20px;
+}
+
+.desc {
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.6;
+  margin-bottom:20px;
+}
+
+.tabs {
+  display:flex;
+  gap:8px;
+  padding:5px;
+  background:#090f1d;
+  border:1px solid var(--border);
+  border-radius:12px;
+  margin-bottom:20px;
+}
+
 .tab {
-  flex:1;background:#26344c;color:#bdcce0;
+  flex:1;
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  padding:12px 5px;
+  border-radius:9px;
+  font-size:13px;
+  font-weight:700;
 }
-.tab.active { background:#2563eb;color:white; }
+
+.tab.active {
+  color:white;
+  background:#285dc1;
+  box-shadow:0 4px 15px #2456b855;
+}
+
 .panel { display:none; }
 .panel.active { display:block; }
-input {
-  width:100%;padding:15px;border-radius:10px;
-  border:1px solid #354863;background:#0b1424;
-  color:white;font-size:18px;margin:12px 0;
+
+.field-label {
+  display:block;
+  font-size:12px;
+  color:#b1c1da;
+  margin-bottom:9px;
 }
-.action {
-  width:100%;background:#2563eb;color:white;
+
+input {
+  width:100%;
+  border:1px solid #344663;
+  background:#090f1d;
+  color:white;
+  border-radius:11px;
+  padding:15px;
+  outline:none;
+  font-size:17px;
+  transition:.2s;
+}
+
+input:focus {
+  border-color:var(--blue);
+  box-shadow:0 0 0 3px #4388ff20;
+}
+
+.code-input {
+  text-align:center;
+  letter-spacing:5px;
+  font-size:22px;
+  font-weight:800;
+  text-transform:uppercase;
+}
+
+.btn {
+  width:100%;
+  border:0;
+  border-radius:11px;
+  padding:14px;
+  color:white;
+  font-size:13px;
+  font-weight:800;
+  transition:.2s;
   margin-top:10px;
 }
-.action:disabled { opacity:.5;cursor:not-allowed; }
-.green { background:#16a34a; }
-.red { background:#dc2626; }
-.code {
-  background:#080f1d;padding:20px;border-radius:12px;
-  text-align:center;margin:15px 0;
+
+.btn:hover { filter:brightness(1.12); transform:translateY(-1px); }
+.btn:disabled { opacity:.45;cursor:not-allowed;transform:none; }
+
+.primary { background:linear-gradient(100deg,#367cf4,#6559e9); }
+.success { background:linear-gradient(100deg,#0fae83,#20c997); }
+.danger { background:#d93f59; }
+.secondary { background:#253650;border:1px solid #3b506e; }
+
+.code-box {
+  background:#090f1d;
+  border:1px dashed #497ed4;
+  border-radius:14px;
+  padding:17px;
+  text-align:center;
+  margin:17px 0;
 }
-#roomCode {
-  font-size:27px;font-weight:bold;letter-spacing:3px;
-  color:#60a5fa;overflow-wrap:anywhere;
+
+.code-label {
+  font-size:10px;
+  color:var(--muted);
+  letter-spacing:2px;
 }
-.status {
-  color:#a9bdd9;text-align:center;
-  font-size:14px;margin:15px 0;
+
+.code-value {
+  font-size:29px;
+  font-weight:900;
+  letter-spacing:5px;
+  color:#77aaff;
+  margin:12px 0;
+  overflow-wrap:anywhere;
 }
-video {
-  width:100%;background:#000;border-radius:12px;
-  margin-top:15px;max-height:65vh;
+
+.status-box {
+  background:#0b1525;
+  border:1px solid #253752;
+  border-radius:11px;
+  padding:13px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:17px;
+  font-size:12px;
+  color:#a9bbd4;
+  line-height:1.5;
 }
+
+.status-light {
+  width:9px;
+  height:9px;
+  flex:none;
+  border-radius:50%;
+  background:#64748b;
+}
+
+.status-light.online { background:var(--green);box-shadow:0 0 10px var(--green); }
+.status-light.waiting { background:#f5b942;box-shadow:0 0 10px #f5b942; }
+
 .hidden { display:none!important; }
-.note {
-  font-size:12px;color:#8294ae;
-  line-height:1.6;margin-top:20px;
+
+.viewer-card {
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+}
+
+.viewer-head {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:16px;
+}
+
+.viewer-head h2 {
+  font-size:17px;
+  margin:0;
+}
+
+.live-label {
+  font-size:10px;
+  color:var(--green);
+  background:#20c99718;
+  border:1px solid #20c99744;
+  padding:6px 10px;
+  border-radius:20px;
+}
+
+.screen-area {
+  width:100%;
+  min-height:350px;
+  height:460px;
+  border-radius:15px;
+  border:1px solid #2b3c58;
+  background:#050912;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+}
+
+.screen-area video {
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  background:#000;
+}
+
+.placeholder {
+  text-align:center;
+  padding:25px;
+}
+
+.placeholder-icon {
+  font-size:55px;
+  margin-bottom:15px;
+  filter:drop-shadow(0 5px 20px #4388ff55);
+}
+
+.placeholder h3 {
+  font-size:15px;
+  margin:0 0 8px;
+}
+
+.placeholder p {
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.6;
+}
+
+.controls {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:13px;
+}
+
+.control-btn {
+  flex:1;
+  min-width:100px;
+  background:#1a2940;
+  border:1px solid #304460;
+  color:#dce8ff;
+  border-radius:10px;
+  padding:12px 8px;
+  font-size:11px;
+  font-weight:700;
+}
+
+.control-btn:hover { background:#263c5d; }
+
+.quality-info {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:14px;
+  color:var(--muted);
+  font-size:11px;
+}
+
+.features {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:13px;
+  margin-top:20px;
+}
+
+.feature {
+  border:1px solid var(--border);
+  background:#111a2b;
+  padding:17px;
+  border-radius:14px;
+}
+
+.feature-icon { font-size:21px; }
+.feature h4 { font-size:12px;margin:10px 0 5px; }
+.feature p { color:var(--muted);font-size:11px;line-height:1.5;margin:0; }
+
+footer {
+  text-align:center;
+  color:#64748b;
+  font-size:11px;
+  padding:30px 10px;
+}
+
+.toast {
+  position:fixed;
+  bottom:25px;
+  left:50%;
+  transform:translate(-50%,20px);
+  background:#1b2b44;
+  border:1px solid #405778;
+  color:white;
+  padding:13px 20px;
+  border-radius:12px;
+  font-size:12px;
+  opacity:0;
+  pointer-events:none;
+  transition:.25s;
+  z-index:99;
+  text-align:center;
+  max-width:90%;
+}
+
+.toast.show {
+  opacity:1;
+  transform:translate(-50%,0);
+}
+
+.screen-area:fullscreen {
+  width:100vw;
+  height:100vh;
+  max-height:100vh;
+  border:0;
+  border-radius:0;
+}
+
+.screen-area:fullscreen video {
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+
+@media(max-width:760px) {
+  header { padding:0 4%;height:65px; }
+  .brand { font-size:15px; }
+  .logo { width:35px;height:35px; }
+  .header-status { font-size:10px; }
+  main { margin:27px auto; }
+  .workspace { grid-template-columns:1fr; }
+  .hero { margin-bottom:25px; }
+  .card { padding:17px; }
+  .screen-area { height: min(62vh,430px);min-height:240px; }
+  .features { grid-template-columns:1fr; }
+}
+
+@media(max-width:380px) {
+  .version { display:none; }
+  .screen-area { height:55vh; }
 }
 </style>
 </head>
+
 <body>
 
-<div class="app">
-  <h1>🖥️ PC Screen Connect</h1>
-  <p class="sub">Chia sẻ màn hình PC sang điện thoại</p>
-
-  <div class="tabs">
-    <button class="tab active" onclick="showTab('host',this)">
-      Máy tính
-    </button>
-    <button class="tab" onclick="showTab('viewer',this)">
-      Điện thoại
-    </button>
+<header>
+  <div class="brand">
+    <div class="logo">🖥️</div>
+    <span>ScreenConnect</span>
+    <span class="version">3.0 PRO</span>
   </div>
+  <div class="header-status">
+    <span class="dot"></span>
+    WebRTC Ready
+  </div>
+</header>
 
-  <!-- PC HOST -->
-  <div id="host" class="panel active">
-    <h3>Tạo phòng chia sẻ</h3>
-    <p class="status">Tạo mã để điện thoại kết nối.</p>
+<main>
 
-    <button class="action" id="createBtn" onclick="createRoom()">
-      + TẠO MÃ KẾT NỐI
-    </button>
+  <section class="hero">
+    <h1>Share your screen <span>anywhere.</span></h1>
+    <p>
+      Chia sẻ màn hình máy tính đến điện thoại trực tiếp.<br>
+      Nhanh chóng · Âm thanh · Hình ảnh chất lượng cao
+    </p>
+  </section>
 
-    <div id="hostRoom" class="hidden">
-      <div class="code">
-        <p>MÃ KẾT NỐI</p>
-        <div id="roomCode">...</div>
-        <button class="action" onclick="copyCode()">📋 Sao chép mã</button>
+  <section class="workspace">
+
+    <!-- LEFT PANEL -->
+    <div class="card">
+      <div class="card-title">
+        <div class="card-icon">🔗</div>
+        Kết nối thiết bị
+      </div>
+      <div class="desc">
+        Tạo phòng trên PC hoặc nhập mã phòng từ điện thoại.
       </div>
 
-      <button class="action green" id="shareBtn" onclick="startShare()">
-        🖥️ CHỌN MÀN HÌNH CHIA SẺ
-      </button>
+      <div class="tabs">
+        <button class="tab active" id="hostTab" onclick="switchTab('host')">
+          🖥 Máy tính
+        </button>
+        <button class="tab" id="viewerTab" onclick="switchTab('viewer')">
+          📱 Điện thoại
+        </button>
+      </div>
 
-      <button class="action red" onclick="stopAll()">
-        DỪNG CHIA SẺ
-      </button>
+      <!-- HOST -->
+      <div id="hostPanel" class="panel active">
+        <label class="field-label">TẠO PHÒNG CHIA SẺ</label>
+
+        <button class="btn primary" id="createBtn" onclick="createRoom()">
+          + TẠO MÃ KẾT NỐI
+        </button>
+
+        <div id="hostRoom" class="hidden">
+          <div class="code-box">
+            <div class="code-label">MÃ PHÒNG CỦA BẠN</div>
+            <div class="code-value" id="roomCode">--------</div>
+            <button class="btn secondary" onclick="copyCode()">
+              📋 SAO CHÉP MÃ
+            </button>
+          </div>
+
+          <button class="btn success" id="shareBtn" onclick="startShare()">
+            🖥 CHỌN MÀN HÌNH CHIA SẺ
+          </button>
+
+          <button class="btn danger" onclick="stopHost()">
+            ■ DỪNG PHÒNG
+          </button>
+        </div>
+
+        <div class="status-box">
+          <span class="status-light" id="hostLight"></span>
+          <span id="hostStatus">Chưa tạo phòng. Hãy tạo mã kết nối.</span>
+        </div>
+      </div>
+
+      <!-- VIEWER -->
+      <div id="viewerPanel" class="panel">
+        <label class="field-label">NHẬP MÃ TỪ MÁY TÍNH</label>
+
+        <input
+          id="codeInput"
+          class="code-input"
+          placeholder="XXXXXXXX"
+          maxlength="8"
+          autocomplete="off"
+          autocapitalize="characters"
+        >
+
+        <button class="btn primary" id="connectBtn" onclick="connectPC()">
+          ↗ KẾT NỐI VỚI PC
+        </button>
+
+        <button class="btn danger hidden" id="disconnectBtn"
+                onclick="disconnectViewer()">
+          NGẮT KẾT NỐI
+        </button>
+
+        <div class="status-box">
+          <span class="status-light" id="viewerLight"></span>
+          <span id="viewerStatus">Chưa kết nối với máy tính.</span>
+        </div>
+      </div>
+
+      <div class="desc" style="margin:20px 0 0">
+        🔒 Chỉ kết nối với máy tính mà bạn được phép truy cập.
+      </div>
     </div>
 
-    <p class="status" id="hostStatus">Chưa tạo phòng.</p>
-  </div>
+    <!-- RIGHT PANEL -->
+    <div class="card viewer-card">
+      <div class="viewer-head">
+        <h2>📺 Màn hình trực tiếp</h2>
+        <span class="live-label" id="liveLabel">● OFFLINE</span>
+      </div>
 
-  <!-- PHONE VIEWER -->
-  <div id="viewer" class="panel">
-    <h3>Kết nối với máy tính</h3>
-    <p class="status">Nhập mã hiển thị trên máy tính.</p>
+      <div class="screen-area" id="screenArea">
+        <div class="placeholder" id="placeholder">
+          <div class="placeholder-icon">🖥️</div>
+          <h3>Chưa có màn hình được chia sẻ</h3>
+          <p>
+            Tạo phòng trên PC và kết nối bằng điện thoại.<br>
+            Hình ảnh sẽ xuất hiện tại đây.
+          </p>
+        </div>
 
-    <input id="codeInput" placeholder="Nhập mã kết nối"
-           maxlength="40" autocomplete="off">
+        <video id="screen" autoplay playsinline
+               class="hidden"></video>
+      </div>
 
-    <button class="action" id="connectBtn" onclick="connectPC()">
-      🔗 KẾT NỐI
-    </button>
+      <div class="controls">
+        <button class="control-btn" id="audioBtn"
+                onclick="toggleAudio()" disabled>
+          🔇 Âm thanh
+        </button>
 
-    <button class="action red hidden" id="disconnectBtn"
-            onclick="disconnect()">
-      NGẮT KẾT NỐI
-    </button>
+        <button class="control-btn" onclick="toggleFullscreen()">
+          ⛶ Toàn màn hình
+        </button>
 
-    <p class="status" id="viewerStatus">Chưa kết nối.</p>
+        <button class="control-btn" onclick="fitScreen()">
+          ◫ Vừa màn hình
+        </button>
+      </div>
 
-    <video id="screen" autoplay playsinline controls
-           class="hidden"></video>
-  </div>
+      <div class="quality-info">
+        <span id="resolution">Độ phân giải: --</span>
+        <span id="audioInfo">Audio: --</span>
+      </div>
+    </div>
 
-  <p class="note">
-    Kết nối cần Internet và trình duyệt hỗ trợ WebRTC.
-    PC cần sử dụng HTTPS hoặc localhost để chia sẻ màn hình.
-    Chỉ chia sẻ màn hình khi bạn đã cho phép trình duyệt.
-  </p>
-</div>
+  </section>
+
+  <section class="features">
+    <div class="feature">
+      <div class="feature-icon">🔊</div>
+      <h4>Truyền âm thanh</h4>
+      <p>Nhận âm thanh PC khi nguồn chia sẻ hỗ trợ.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon">📐</div>
+      <h4>Tự căn màn hình</h4>
+      <p>Giữ tỷ lệ hình ảnh, tự thích ứng với điện thoại.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon">⚡</div>
+      <h4>Kết nối trực tiếp</h4>
+      <p>Truyền dữ liệu qua WebRTC sau khi thiết lập kết nối.</p>
+    </div>
+  </section>
+
+  <footer>
+    PC Screen Connect 3.0 · Powered by WebRTC & PeerJS
+    <br><br>
+    Chỉ sử dụng để chia sẻ màn hình có sự cho phép.
+  </footer>
+
+</main>
+
+<div class="toast" id="toast"></div>
 
 <script>
 let peer = null;
 let localStream = null;
-let currentCall = null;
-let connections = [];
+let activeCall = null;
+let hostConnections = new Map();
 let isHost = false;
+let roomCode = null;
+let reconnecting = false;
 
 const $ = id => document.getElementById(id);
 
-function showTab(name, button) {
-  document.querySelectorAll('.panel').forEach(p =>
-    p.classList.remove('active')
-  );
-  document.querySelectorAll('.tab').forEach(b =>
-    b.classList.remove('active')
-  );
-  $(name).classList.add('active');
-  button.classList.add('active');
+function toast(message) {
+  const el = $('toast');
+  el.textContent = message;
+  el.classList.add('show');
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => el.classList.remove('show'), 2600);
 }
 
-function setStatus(id, message) {
-  $(id).textContent = message;
+function setStatus(type, message, state = '') {
+  $(type + 'Status').textContent = message;
+  $(type + 'Light').className = 'status-light ' + state;
+}
+
+function switchTab(type) {
+  $('hostPanel').classList.toggle('active', type === 'host');
+  $('viewerPanel').classList.toggle('active', type === 'viewer');
+  $('hostTab').classList.toggle('active', type === 'host');
+  $('viewerTab').classList.toggle('active', type === 'viewer');
 }
 
 function randomCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const values = new Uint32Array(8);
-  crypto.getRandomValues(values);
-  return Array.from(values, v => chars[v % chars.length]).join('');
+  const bytes = new Uint32Array(8);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, v => chars[v % chars.length]).join('');
 }
 
-// TẠO PHÒNG PC
+function setLive(online) {
+  $('liveLabel').textContent = online ? '● LIVE' : '● OFFLINE';
+  $('liveLabel').style.color = online ? '#20c997' : '#8294b2';
+}
+
+function resetViewerScreen() {
+  const video = $('screen');
+  video.pause();
+  video.srcObject = null;
+  video.classList.add('hidden');
+
+  $('placeholder').classList.remove('hidden');
+  $('audioBtn').disabled = true;
+  $('audioBtn').textContent = '🔇 Âm thanh';
+  $('resolution').textContent = 'Độ phân giải: --';
+  $('audioInfo').textContent = 'Audio: --';
+  setLive(false);
+}
+
+// ============================
+// HOST: CREATE ROOM
+// ============================
+
 function createRoom() {
   if (peer) return;
 
+  if (!window.Peer) {
+    toast('Không tải được PeerJS. Kiểm tra Internet.');
+    return;
+  }
+
   isHost = true;
+  roomCode = randomCode();
+
   $('createBtn').disabled = true;
-  setStatus('hostStatus', 'Đang tạo phòng...');
+  setStatus('host', 'Đang khởi tạo phòng...', 'waiting');
 
-  const code = randomCode();
-  peer = new Peer('pc-' + code);
+  peer = new Peer('pc-' + roomCode);
 
-  peer.on('open', id => {
-    $('roomCode').textContent = code;
+  peer.on('open', () => {
+    $('roomCode').textContent = roomCode;
     $('hostRoom').classList.remove('hidden');
-    setStatus('hostStatus', 'Đã tạo phòng. Đang chờ điện thoại...');
+
+    setStatus(
+      'host',
+      'Phòng đã sẵn sàng. Đang chờ điện thoại kết nối.',
+      'online'
+    );
+
+    toast('Tạo phòng thành công!');
   });
 
   peer.on('connection', conn => {
-    connections.push(conn);
+    hostConnections.set(conn.peer, conn);
 
     conn.on('open', () => {
-      if (localStream) sendScreen(conn.peer);
-      setStatus('hostStatus', 'Có thiết bị đang kết nối.');
+      setStatus('host', 'Có điện thoại đang kết nối.', 'online');
+
+      if (localStream) {
+        sendScreen(conn.peer);
+      }
     });
 
     conn.on('close', () => {
-      setStatus('hostStatus', 'Thiết bị đã ngắt kết nối.');
+      hostConnections.delete(conn.peer);
+      setStatus(
+        'host',
+        hostConnections.size
+          ? 'Vẫn còn thiết bị đang kết nối.'
+          : 'Thiết bị đã ngắt kết nối.',
+        hostConnections.size ? 'online' : 'waiting'
+      );
+    });
+
+    conn.on('error', () => {
+      hostConnections.delete(conn.peer);
     });
   });
 
   peer.on('error', err => {
-    setStatus('hostStatus', 'Lỗi: ' + err.type);
-    $('createBtn').disabled = false;
+    setStatus('host', 'Lỗi: ' + err.type, '');
+    toast('Không thể tạo phòng: ' + err.type);
+    resetHost();
+  });
+
+  peer.on('disconnected', () => {
+    setStatus('host', 'Mất kết nối máy chủ trung gian.', 'waiting');
   });
 }
 
-function copyCode() {
-  const code = $('roomCode').textContent;
-  navigator.clipboard.writeText(code).then(() => {
-    setStatus('hostStatus', 'Đã sao chép mã!');
-  });
+async function copyCode() {
+  if (!roomCode) return;
+
+  try {
+    await navigator.clipboard.writeText(roomCode);
+    toast('Đã sao chép mã phòng!');
+  } catch {
+    toast('Không thể sao chép. Mã: ' + roomCode);
+  }
 }
 
-// CHỌN MÀN HÌNH PC
+// ============================
+// HOST: SHARE SCREEN + AUDIO
+// ============================
+
 async function startShare() {
   if (!peer || !isHost) return;
 
+  if (!navigator.mediaDevices?.getDisplayMedia) {
+    toast('Trình duyệt không hỗ trợ chia sẻ màn hình.');
+    return;
+  }
+
   try {
     localStream = await navigator.mediaDevices.getDisplayMedia({
-      video: true,
-      audio: false
+      video: {
+        frameRate: { ideal: 30, max: 60 }
+      },
+      audio: true
     });
 
-    localStream.getVideoTracks()[0].addEventListener('ended', () => {
-      stopAll();
-    });
+    const videoTrack = localStream.getVideoTracks()[0];
+
+    if (!videoTrack) {
+      throw new Error('Không nhận được video màn hình.');
+    }
+
+    videoTrack.addEventListener('ended', () => {
+      if (localStream) stopShareOnly();
+    }, { once: true });
 
     $('shareBtn').disabled = true;
-    setStatus('hostStatus', 'Đang chia sẻ màn hình.');
 
-    // Gửi màn hình đến các thiết bị đã kết nối
-    connections.forEach(conn => {
-      if (conn.open) sendScreen(conn.peer);
-    });
+    const hasAudio = localStream.getAudioTracks().length > 0;
+
+    setStatus(
+      'host',
+      hasAudio
+        ? 'Đang chia sẻ màn hình và âm thanh.'
+        : 'Đang chia sẻ hình ảnh. Nguồn không cung cấp âm thanh.',
+      'online'
+    );
+
+    // Gửi tới tất cả thiết bị đã kết nối
+    for (const id of hostConnections.keys()) {
+      sendScreen(id);
+    }
+
+    toast('Đã bắt đầu chia sẻ!');
 
   } catch (err) {
-    setStatus('hostStatus', 'Không thể chia sẻ: ' + err.message);
+    toast('Không thể chia sẻ: ' + err.message);
   }
 }
 
 function sendScreen(viewerId) {
-  if (!localStream || !peer) return;
+  if (!peer || !localStream) return;
+
+  const conn = hostConnections.get(viewerId);
+
+  if (!conn || !conn.open) return;
+
+  const oldCall = conn.call;
+
+  if (oldCall) {
+    oldCall.close();
+  }
 
   const call = peer.call(viewerId, localStream);
+
   if (!call) return;
 
+  conn.call = call;
+
   call.on('close', () => {
-    setStatus('hostStatus', 'Một thiết bị đã ngắt xem.');
+    if (conn.call === call) conn.call = null;
+  });
+
+  call.on('error', () => {
+    if (conn.call === call) conn.call = null;
   });
 }
 
-// ĐIỆN THOẠI KẾT NỐI
-function connectPC() {
-  if (peer) return;
-
-  const code = $('codeInput').value.trim().toUpperCase();
-
-  if (!/^[A-Z0-9]{8}$/.test(code)) {
-    setStatus('viewerStatus', 'Mã kết nối không hợp lệ.');
-    return;
-  }
-
-  $('connectBtn').disabled = true;
-  setStatus('viewerStatus', 'Đang kết nối...');
-
-  peer = new Peer();
-  isHost = false;
-
-  peer.on('open', () => {
-    const conn = peer.connect('pc-' + code);
-    connections.push(conn);
-
-    conn.on('open', () => {
-      setStatus('viewerStatus', 'Đã kết nối! Đang chờ màn hình PC...');
-      $('disconnectBtn').classList.remove('hidden');
-    });
-
-    conn.on('error', () => {
-      setStatus('viewerStatus', 'Không thể kết nối với PC.');
-    });
-  });
-
-  peer.on('call', call => {
-    currentCall = call;
-    call.answer();
-
-    call.on('stream', stream => {
-      const video = $('screen');
-      video.srcObject = stream;
-      video.classList.remove('hidden');
-      video.play().catch(() => {});
-      setStatus('viewerStatus', 'Đang xem màn hình PC.');
-    });
-
-    call.on('close', () => {
-      $('screen').srcObject = null;
-      $('screen').classList.add('hidden');
-      setStatus('viewerStatus', 'Chia sẻ đã kết thúc.');
-    });
-  });
-
-  peer.on('error', err => {
-    setStatus('viewerStatus', 'Lỗi kết nối: ' + err.type);
-    $('connectBtn').disabled = false;
-  });
-
-  peer.on('disconnected', () => {
-    setStatus('viewerStatus', 'Mất kết nối máy chủ.');
-  });
-}
-
-// NGẮT KẾT NỐI
-function disconnect() {
-  if (currentCall) {
-    currentCall.close();
-    currentCall = null;
-  }
-
-  connections.forEach(c => c.close());
-  connections = [];
-
-  if (peer && !isHost) {
-    peer.destroy();
-    peer = null;
-  }
-
-  $('screen').srcObject = null;
-  $('screen').classList.add('hidden');
-  $('disconnectBtn').classList.add('hidden');
-  $('connectBtn').disabled = false;
-
-  setStatus('viewerStatus', 'Đã ngắt kết nối.');
-}
-
-function stopAll() {
+function stopShareOnly() {
   if (localStream) {
     localStream.getTracks().forEach(track => track.stop());
     localStream = null;
   }
 
-  connections.forEach(c => c.close());
-  connections = [];
+  hostConnections.forEach(conn => {
+    if (conn.call) {
+      conn.call.close();
+      conn.call = null;
+    }
+  });
+
+  $('shareBtn').disabled = false;
+
+  setStatus(
+    'host',
+    'Đã dừng chia sẻ màn hình. Phòng vẫn hoạt động.',
+    'waiting'
+  );
+
+  toast('Đã dừng chia sẻ.');
+}
+
+function resetHost() {
+  if (localStream) {
+    localStream.getTracks().forEach(track => track.stop());
+    localStream = null;
+  }
 
   if (peer) {
     peer.destroy();
     peer = null;
   }
 
-  currentCall = null;
+  hostConnections.clear();
+  roomCode = null;
+
   $('hostRoom').classList.add('hidden');
   $('createBtn').disabled = false;
   $('shareBtn').disabled = false;
 
-  setStatus('hostStatus', 'Đã dừng chia sẻ.');
+  setStatus('host', 'Chưa tạo phòng.', '');
 }
+
+function stopHost() {
+  resetHost();
+  toast('Đã đóng phòng.');
+}
+
+// ============================
+// VIEWER: CONNECT
+// ============================
+
+function connectPC() {
+  if (peer) return;
+
+  const code = $('codeInput').value.trim().toUpperCase();
+
+  if (!/^[A-Z0-9]{8}$/.test(code)) {
+    toast('Mã phòng phải có 8 ký tự.');
+    return;
+  }
+
+  $('connectBtn').disabled = true;
+  setStatus('viewer', 'Đang kết nối tới máy tính...', 'waiting');
+
+  resetViewerScreen();
+
+  isHost = false;
+  peer = new Peer();
+
+  peer.on('open', () => {
+    const conn = peer.connect('pc-' + code, {
+      reliable: true
+    });
+
+    hostConnections.set('viewer', conn);
+
+    conn.on('open', () => {
+      setStatus(
+        'viewer',
+        'Đã kết nối phòng. Đang chờ PC chia sẻ màn hình...',
+        'online'
+      );
+
+      $('disconnectBtn').classList.remove('hidden');
+      toast('Kết nối phòng thành công!');
+    });
+
+    conn.on('error', () => {
+      setStatus('viewer', 'Lỗi kết nối phòng.', '');
+    });
+
+    conn.on('close', () => {
+      if (!peer || isHost) return;
+
+      setStatus('viewer', 'PC đã đóng kết nối.', '');
+      resetViewerScreen();
+    });
+  });
+
+  // Nhận cuộc gọi media từ PC
+  peer.on('call', call => {
+    if (activeCall) activeCall.close();
+
+    activeCall = call;
+
+    call.answer();
+
+    call.on('stream', stream => {
+      const video = $('screen');
+
+      video.srcObject = stream;
+      video.muted = false;
+      video.volume = 1;
+
+      $('placeholder').classList.add('hidden');
+      video.classList.remove('hidden');
+
+      $('audioBtn').disabled = false;
+
+      const videoTrack = stream.getVideoTracks()[0];
+      const audioTracks = stream.getAudioTracks();
+
+      if (videoTrack) {
+        const updateResolution = () => {
+          const settings = videoTrack.getSettings();
+          if (settings.width && settings.height) {
+            $('resolution').textContent =
+              'Độ phân giải: ' +
+              settings.width + ' × ' + settings.height;
+          }
+        };
+
+        updateResolution();
+        videoTrack.addEventListener('unmute', updateResolution);
+      }
+
+      $('audioInfo').textContent =
+        'Audio: ' + (audioTracks.length ? 'Có' : 'Không có');
+
+      setLive(true);
+
+      video.play().then(() => {
+        $('audioBtn').textContent = '🔊 Âm thanh ON';
+        setStatus(
+          'viewer',
+          audioTracks.length
+            ? 'Đang xem và nhận âm thanh PC.'
+            : 'Đang xem màn hình PC. Nguồn không có âm thanh.',
+          'online'
+        );
+      }).catch(() => {
+        $('audioBtn').textContent = '🔊 BẬT ÂM THANH';
+        setStatus(
+          'viewer',
+          'Đã nhận màn hình. Nhấn Bật âm thanh để phát.',
+          'online'
+        );
+      });
+    });
+
+    call.on('close', () => {
+      if (activeCall === call) activeCall = null;
+      resetViewerScreen();
+      setStatus('viewer', 'Chia sẻ màn hình đã kết thúc.', 'waiting');
+    });
+
+    call.on('error', () => {
+      resetViewerScreen();
+      setStatus('viewer', 'Lỗi truyền màn hình.', '');
+    });
+  });
+
+  peer.on('error', err => {
+    const messages = {
+      'peer-unavailable': 'Không tìm thấy phòng. Kiểm tra mã phòng.',
+      'network': 'Lỗi mạng. Hãy kiểm tra Internet.',
+      'server-error': 'Máy chủ trung gian gặp lỗi.',
+      'unavailable-id': 'ID đã được sử dụng.'
+    };
+
+    setStatus(
+      'viewer',
+      messages[err.type] || ('Lỗi: ' + err.type),
+      ''
+    );
+
+    $('connectBtn').disabled = false;
+  });
+
+  peer.on('disconnected', () => {
+    setStatus('viewer', 'Mất kết nối máy chủ.', 'waiting');
+  });
+}
+
+// ============================
+// VIEWER CONTROLS
+// ============================
+
+async function toggleAudio() {
+  const video = $('screen');
+
+  if (!video.srcObject) return;
+
+  try {
+    video.muted = false;
+    video.volume = 1;
+    await video.play();
+
+    $('audioBtn').textContent = '🔊 Âm thanh ON';
+    toast('Đã bật âm thanh.');
+  } catch {
+    video.muted = true;
+    toast('Trình duyệt chưa cho phép phát âm thanh.');
+  }
+}
+
+async function toggleFullscreen() {
+  const area = $('screenArea');
+
+  try {
+    if (!document.fullscreenElement) {
+      await area.requestFullscreen();
+    } else {
+      await document.exitFullscreen();
+    }
+  } catch {
+    toast('Không thể bật toàn màn hình trên thiết bị này.');
+  }
+}
+
+function fitScreen() {
+  const video = $('screen');
+  video.style.objectFit = 'contain';
+  toast('Đã căn vừa màn hình.');
+}
+
+function disconnectViewer() {
+  if (activeCall) {
+    activeCall.close();
+    activeCall = null;
+  }
+
+  if (peer && !isHost) {
+    peer.destroy();
+    peer = null;
+  }
+
+  hostConnections.clear();
+
+  resetViewerScreen();
+
+  $('disconnectBtn').classList.add('hidden');
+  $('connectBtn').disabled = false;
+
+  setStatus('viewer', 'Đã ngắt kết nối.', '');
+  toast('Đã ngắt kết nối.');
+}
+
+// Xử lý khi người dùng đóng trang
+window.addEventListener('beforeunload', () => {
+  if (localStream) {
+    localStream.getTracks().forEach(track => track.stop());
+  }
+
+  if (peer) peer.destroy();
+});
+
+// Tự cập nhật thông tin khi thay đổi kích thước
+window.addEventListener('resize', () => {
+  if ($('screen').srcObject) {
+    fitScreen();
+  }
+});
 </script>
 </body>
 </html>
